@@ -1,0 +1,3 @@
+[submodule "Virtus/Vendor/GLFW"]
+	path = Virtus/Vendor/GLFW
+	url = https://github.com/glfw/glfw

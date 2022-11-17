@@ -7,5 +7,20 @@ set(EXPORT_COMPILE_COMMANDS true)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
+# GLAD
+    set(GLAD Virtus/Vendor/glad/src/gl.c)
+    include_directories(Virtus/Vendor/glad/include)
+	link_libraries(GL)
+#
+
+# GLFW
+	link_libraries(glfw)
+#
+
+# FMT
+    link_libraries(fmt)
+#
+
 file(GLOB Virtus Virtus/*.cpp Virtus/Include/*.hpp)
-add_executable(Virtus ${Virtus})
+include_directories(Virtus/Include)
+add_executable(Virtus ${Virtus} ${GLAD})
