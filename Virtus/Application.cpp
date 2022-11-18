@@ -1,4 +1,6 @@
+#ifdef __INTELLISENSE
 #include <Virtus.hpp>
+#endif
 
 int main() {
 
@@ -56,10 +58,10 @@ int main() {
         }
     )";
 
-    std::vector<Virtus::Graphics::Shader::Unit> units = {
-        {Virtus::Graphics::Shader::Unit::Stage::Vertex, vertex_source},
-        {Virtus::Graphics::Shader::Unit::Stage::Fragment, fragment_source}
-    };
+    std::vector<Virtus::Graphics::Shader::Unit> units;
+    units.push_back(Virtus::Graphics::Shader::Unit(Virtus::Graphics::Shader::Unit::Stage::Vertex, vertex_source));
+    units.push_back(Virtus::Graphics::Shader::Unit(Virtus::Graphics::Shader::Unit::Stage::Fragment, fragment_source));
+
     Virtus::Graphics::Shader shader(units);
 
     while(!window->Poll()) {

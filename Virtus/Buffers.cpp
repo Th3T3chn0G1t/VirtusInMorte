@@ -1,4 +1,6 @@
+#ifdef __INTELLISENSE
 #include <Virtus.hpp>
+#endif
 
 namespace Virtus {
 
@@ -26,13 +28,11 @@ namespace Virtus {
         // We can't setup buffer layout here since there is no vertex buffer bound
         // so creation of a vertex buffer is liased through the VAO and we can defer
         // buffer layout until then
-        glGenVertexArrays(1, &m_Handle);
+        uint handle = 0;
+        glGenVertexArrays(1, &handle);
+        m_Handle.reset(handle);
 
-    }
-
-    Graphics::VAO::~VAO() {
-
-        glDeleteVertexArrays(1, &m_Handle);        
+        Info(fmt::format("Created VAO {}", handle));
 
     }
 
@@ -124,7 +124,8 @@ namespace Virtus {
 
     void Graphics::VAO::Bind() {
 
-        glBindVertexArray(m_Handle);
+        Info(fmt::format("Binding VAO {}", (uint) m_Handle.get()));
+        glBindVertexArray(m_Handle.get());
 
     }
 
@@ -141,41 +142,33 @@ namespace Virtus {
 
     Graphics::VBO::VBO(void* data, uint size, Graphics::BufferUsage usage) {
 
-        glGenBuffers(1, &m_Handle);
+        uint handle = 0;
+        glGenBuffers(1, &handle);
+        m_Handle.reset(handle);
         Bind();
         glBufferData(GL_ARRAY_BUFFER, size, data, UsageToGL(usage));
 
     }
 
-    Graphics::VBO::~VBO() {
-
-        glDeleteBuffers(1, &m_Handle);
-
-    }
-
     void Graphics::VBO::Bind() {
 
-        glBindBuffer(GL_ARRAY_BUFFER, m_Handle);
+        glBindBuffer(GL_ARRAY_BUFFER, m_Handle.get());
 
     }
 
     Graphics::IBO::IBO(std::vector<uint>& indices, BufferUsage usage) {
 
-        glGenBuffers(1, &m_Handle);
+        uint handle = 0;
+        glGenBuffers(1, &handle);
+        m_Handle.reset(handle);
         Bind();
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size(), indices.data(), UsageToGL(usage));
 
     }
 
-    Graphics::IBO::~IBO() {
-
-        glDeleteBuffers(1, &m_Handle);
-
-    }
-
     void Graphics::IBO::Bind() {
     
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Handle);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Handle.get());
     
     }
 

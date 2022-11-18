@@ -5,6 +5,7 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
+#include <functional>
 #include <cstdlib>
 
 #include <glad/gl.h>
@@ -51,7 +52,7 @@ namespace Virtus {
     public:
         class GLHandle {
 
-        private:
+        public:
             uint m_UnderlyingHandle;
 
         public:
@@ -66,11 +67,32 @@ namespace Virtus {
 
         };
 
+        template<void (*func)(uint)>
+        class GLDestructor {
+
+        public:
+            using pointer = GLHandle;
+
+        public:
+            void operator()(GLHandle handle) {
+                func(handle);
+            }
+
+        };
+
         class Shader;
         class Shader {
 
+        private:
+            static void Deleter(uint handle) { glDeleteProgram(handle); };
+            using Handle = std::unique_ptr<GLHandle, GLDestructor<Deleter>>;
+
         public:
             class Unit {
+
+            private:
+                static void Deleter(uint handle) { glDeleteShader(handle); };
+                using Handle = std::unique_ptr<GLHandle, GLDestructor<Deleter>>;
 
             public:
                 enum class Stage {
@@ -82,23 +104,21 @@ namespace Virtus {
 
             private:
                 Stage m_Stage;
-                uint m_Handle;
+                Handle m_Handle;
 
             public:
                 Unit(Stage, std::string&);
-                ~Unit();
 
                 friend class Shader;
     
             };
 
         private:
-            uint m_Handle;
+            Handle m_Handle;
             std::unordered_map<std::string, uint> m_Uniforms;
 
         public:
             Shader(std::vector<Graphics::Shader::Unit>&);
-            ~Shader();
 
             void Bind();
 
@@ -151,7 +171,6 @@ namespace Virtus {
 
             public:
                 Member(Type type, uint count, uint divisor) : m_Type(type), m_Count(count), m_Divisor(divisor) {}
-                ~Member() = default;
 
             };
 
@@ -160,7 +179,6 @@ namespace Virtus {
 
         public:
             BufferLayout(std::vector<Member>& layout) : m_Layout(layout) {};
-            ~BufferLayout() = default;
 
             void Push(Member);
 
@@ -171,14 +189,16 @@ namespace Virtus {
         class VBO {
 
         private:
-            uint m_Handle;
+            static void Deleter(uint handle) { glDeleteBuffers(1, &handle); };
+            using Handle = std::unique_ptr<GLHandle, GLDestructor<Deleter>>;
+
+        private:
+            Handle m_Handle;
 
         private:
             VBO(void* data, uint size, Graphics::BufferUsage usage);
 
         public:
-            ~VBO();
-
             void Bind();
 
             friend class VAO;
@@ -188,7 +208,11 @@ namespace Virtus {
         class VAO {
 
         private:
-            uint m_Handle;
+            static void Deleter(uint handle) { Info(fmt::format("Deleting VAO {}", handle)); glDeleteVertexArrays(1, &handle); };
+            using Handle = std::unique_ptr<GLHandle, GLDestructor<Deleter>>;
+
+        private:
+            Handle m_Handle;
             BufferLayout m_Layout;
 
             std::vector<VBO> m_VBOs;
@@ -200,7 +224,6 @@ namespace Virtus {
 
         public:
             VAO(BufferLayout);
-            ~VAO();
 
             void Bind();
 
@@ -211,11 +234,14 @@ namespace Virtus {
         class IBO {
 
         private:
-            uint m_Handle;
+            static void Deleter(uint handle) { glDeleteBuffers(1, &handle); };
+            using Handle = std::unique_ptr<GLHandle, GLDestructor<Deleter>>;
+
+        private:
+            Handle m_Handle;
 
         public:
             IBO(std::vector<uint>&, BufferUsage);
-            ~IBO();
 
             void Bind();
 
@@ -240,7 +266,6 @@ namespace Virtus {
 
     public:
         Context(std::shared_ptr<Window>, std::shared_ptr<Graphics>);
-        ~Context() = default;
 
     };
 

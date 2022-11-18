@@ -1,4 +1,6 @@
+#ifdef __INTELLISENSE
 #include <Virtus.hpp>
+#endif
 
 namespace Virtus {
     
