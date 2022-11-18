@@ -25,9 +25,10 @@ namespace Virtus {
 
     static void GladPostCallback(void* ret, const char* name, GLADapiproc proc, int n_args, ...) {
 
-        uint error_code = glad_glGetError();
-
-        if(error_code != GL_NO_ERROR) Fatal(fmt::format("OpenGL Error {} ({}) in `{}()`", GLErrorName(error_code), error_code, name));
+        uint error_code = 0;
+        while((error_code = glad_glGetError()) != GL_NO_ERROR) {
+            Fatal(fmt::format("OpenGL Error {} ({}) in `{}()`", GLErrorName(error_code), error_code, name));
+        }
 
     }
 
@@ -66,10 +67,17 @@ namespace Virtus {
 
         switch(mode) {
 
-            case Graphics::DrawMode::Normal: glDrawArraysInstanced(GL_TRIANGLES, 0, vertices, instances);
-            case Graphics::DrawMode::Indexed: glDrawElementsInstanced(GL_TRIANGLES, vertices, GL_UNSIGNED_INT, nullptr, instances);
+            case Graphics::DrawMode::Normal: glDrawArraysInstanced(GL_TRIANGLES, 0, vertices, instances); break;
+            case Graphics::DrawMode::Indexed: glDrawElementsInstanced(GL_TRIANGLES, vertices, GL_UNSIGNED_INT, nullptr, instances); break;
 
         }
+
+    }
+
+    void Graphics::Clear(float color[3]) {
+
+        glClearColor(color[0], color[1], color[2], color[3]);
+        glClear(GL_COLOR_BUFFER_BIT);
 
     }
 

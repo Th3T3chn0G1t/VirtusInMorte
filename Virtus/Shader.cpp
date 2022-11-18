@@ -19,6 +19,8 @@ namespace Virtus {
 
         m_Handle.reset(glCreateShader(StageToGL(stage)));
 
+        Debug(fmt::format("Created Shader Unit {}", (uint) m_Handle.get()));
+
         const char* data = source.c_str();
         glShaderSource(m_Handle.get(), 1, &data, nullptr);
         glCompileShader(m_Handle.get());
@@ -29,8 +31,11 @@ namespace Virtus {
             int length = 0;
             glGetShaderiv(m_Handle.get(), GL_INFO_LOG_LENGTH, &length);
 
-            char* message = new char[length + 1];
-            glGetShaderInfoLog(m_Handle.get(), length, nullptr, message);
+            std::string message;
+            message.resize(length + 1);
+#ifndef __INTELLISENSE
+            glGetShaderInfoLog(m_Handle.get(), length, nullptr, message.data());
+#endif
 
             Fatal(fmt::format("Failed to compile shader unit:\n{}", message));
         }
@@ -40,6 +45,8 @@ namespace Virtus {
     Graphics::Shader::Shader(std::vector<Graphics::Shader::Unit>& units) {
 
         m_Handle.reset(glCreateProgram());
+
+        Debug(fmt::format("Created Shader {}", (uint) m_Handle.get()));
 
         for(auto& unit : units) {
             glAttachShader(m_Handle.get(), unit.m_Handle.get());
@@ -53,14 +60,13 @@ namespace Virtus {
             int length = 0;
             glGetProgramiv(m_Handle.get(), GL_INFO_LOG_LENGTH, &length);
 
-            char* message = new char[length + 1];
-            glGetProgramInfoLog(m_Handle.get(), length, nullptr, message);
+            std::string message;
+            message.resize(length + 1);
+#ifndef __INTELLISENSE
+            glGetProgramInfoLog(m_Handle.get(), length, nullptr, message.data());
+#endif
 
-            Fatal(fmt::format("Failed to link shader:\n{}", message));
-        }
-
-        for(auto& unit : units) {
-            glDetachShader(m_Handle.get(), unit.m_Handle.get());
+            Fatal(fmt::format("Failed to link shader:\n{}", message.data()));
         }
 
     }

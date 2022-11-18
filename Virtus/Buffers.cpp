@@ -32,11 +32,13 @@ namespace Virtus {
         glGenVertexArrays(1, &handle);
         m_Handle.reset(handle);
 
-        Info(fmt::format("Created VAO {}", handle));
+        Debug(fmt::format("Created VAO {}", handle));
 
     }
 
     void Graphics::VAO::ApplyLayout() {
+
+        Debug(fmt::format("Setting attributes on VAO {}", (uint) m_Handle.get()));
 
         struct AttributeDetail {
 
@@ -114,6 +116,9 @@ namespace Virtus {
 
             }
 
+            glEnableVertexAttribArray(i);
+            glVertexAttribDivisor(i, member.m_Divisor);
+
             offset += detail.m_Size;
 
         }
@@ -124,7 +129,6 @@ namespace Virtus {
 
     void Graphics::VAO::Bind() {
 
-        Info(fmt::format("Binding VAO {}", (uint) m_Handle.get()));
         glBindVertexArray(m_Handle.get());
 
     }
@@ -145,6 +149,9 @@ namespace Virtus {
         uint handle = 0;
         glGenBuffers(1, &handle);
         m_Handle.reset(handle);
+
+        Debug(fmt::format("Created VBO {}", handle));
+
         Bind();
         glBufferData(GL_ARRAY_BUFFER, size, data, UsageToGL(usage));
 
@@ -161,6 +168,9 @@ namespace Virtus {
         uint handle = 0;
         glGenBuffers(1, &handle);
         m_Handle.reset(handle);
+
+        Debug(fmt::format("Created IBO {}", handle));
+
         Bind();
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size(), indices.data(), UsageToGL(usage));
 

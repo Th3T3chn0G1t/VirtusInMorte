@@ -16,17 +16,20 @@ int main() {
 
     struct Vertex {
         float position[3];
-    };
-
-    Vertex triangle[3] = {
-        {-0.5, -0.5, 0.0},
-        { 0.5, -0.5, 0.0},
-        { 0.0,  0.5, 0.0}
+        float color[3];
     };
 
     std::vector<Virtus::Graphics::BufferLayout::Member> layout_members = {
-        {Virtus::Graphics::BufferLayout::Member::Type::FullFloat, 3, 1}
+        {Virtus::Graphics::BufferLayout::Member::Type::FullFloat, 3, 0},
+        {Virtus::Graphics::BufferLayout::Member::Type::FullFloat, 3, 0}
     };
+
+    Vertex triangle[3] = {
+        {{-0.5, -0.5, 0.0}, {1.0f, 0.0f, 0.0f}},
+        {{ 0.5, -0.5, 0.0}, {0.0f, 1.0f, 0.0f}},
+        {{ 0.0,  0.5, 0.0}, {0.0f, 0.0f, 1.0f}}
+    };
+
     Virtus::Graphics::BufferLayout layout(layout_members);
     Virtus::Graphics::VAO vao(layout);
     Virtus::Graphics::VBO& vbo = vao.CreateVBO(
@@ -38,12 +41,13 @@ int main() {
         #version 410 core
 
         layout(location = 0) in vec3 position;
+        layout(location = 1) in vec3 color;
 
         out vec3 vertex_color;
 
         void main() {
             gl_Position = vec4(position, 1.0);
-            vertex_color = position;
+            vertex_color = color;
         }
     )";
     std::string fragment_source = R"(
@@ -66,8 +70,12 @@ int main() {
 
     while(!window->Poll()) {
         
+        float color[3] = {0.8f, 0.4f, 0.3f};
+        graphics->Clear(color);
+
         shader.Bind();
         vao.Bind();
+        vbo.Bind();
         graphics->Draw(3, 1, Virtus::Graphics::DrawMode::Normal);
 
     }

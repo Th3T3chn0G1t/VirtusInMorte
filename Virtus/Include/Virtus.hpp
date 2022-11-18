@@ -24,10 +24,12 @@ namespace Virtus {
     using half = __fp16;
 #endif
     using uptr = std::uintptr_t;
+    using usz = std::size_t;
 
     void Fatal(std::string);
     void Error(std::string);
     void Info(std::string);
+    void Debug(std::string);
 
     class Window {
 
@@ -53,7 +55,7 @@ namespace Virtus {
         class GLHandle {
 
         public:
-            uint m_UnderlyingHandle;
+            uint m_UnderlyingHandle = 0;
 
         public:
             GLHandle() {};
@@ -84,14 +86,14 @@ namespace Virtus {
         class Shader {
 
         private:
-            static void Deleter(uint handle) { glDeleteProgram(handle); };
+            static void Deleter(uint handle) { Debug(fmt::format("Deleting Shader {}", handle)); glDeleteProgram(handle); };
             using Handle = std::unique_ptr<GLHandle, GLDestructor<Deleter>>;
 
         public:
             class Unit {
 
             private:
-                static void Deleter(uint handle) { glDeleteShader(handle); };
+                static void Deleter(uint handle) { Debug(fmt::format("Deleting Shader Unit {}", handle)); glDeleteShader(handle); };
                 using Handle = std::unique_ptr<GLHandle, GLDestructor<Deleter>>;
 
             public:
@@ -189,7 +191,7 @@ namespace Virtus {
         class VBO {
 
         private:
-            static void Deleter(uint handle) { glDeleteBuffers(1, &handle); };
+            static void Deleter(uint handle) { Debug(fmt::format("Deleting VBO {}", handle)); glDeleteBuffers(1, &handle); };
             using Handle = std::unique_ptr<GLHandle, GLDestructor<Deleter>>;
 
         private:
@@ -208,7 +210,7 @@ namespace Virtus {
         class VAO {
 
         private:
-            static void Deleter(uint handle) { Info(fmt::format("Deleting VAO {}", handle)); glDeleteVertexArrays(1, &handle); };
+            static void Deleter(uint handle) { Debug(fmt::format("Deleting VAO {}", handle)); glDeleteVertexArrays(1, &handle); };
             using Handle = std::unique_ptr<GLHandle, GLDestructor<Deleter>>;
 
         private:
@@ -234,7 +236,7 @@ namespace Virtus {
         class IBO {
 
         private:
-            static void Deleter(uint handle) { glDeleteBuffers(1, &handle); };
+            static void Deleter(uint handle) { Debug(fmt::format("Deleting IBO {}", handle)); glDeleteBuffers(1, &handle); };
             using Handle = std::unique_ptr<GLHandle, GLDestructor<Deleter>>;
 
         private:
@@ -255,6 +257,7 @@ namespace Virtus {
         Graphics() = default;
 
         void Draw(uint, uint, DrawMode);
+        void Clear(float[3]);
 
     };
 

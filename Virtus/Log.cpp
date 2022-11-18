@@ -23,5 +23,11 @@ namespace Virtus {
 
     }
 
+    void Debug(std::string message) {
+
+        fmt::print(fmt::fg(fmt::color::light_blue), "Debug: {}\n", message);
+
+    }
+
 }
 
