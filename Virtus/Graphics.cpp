@@ -61,6 +61,13 @@ namespace Virtus {
 
         }
 
+        glEnable(GL_DEPTH_TEST);
+
+        glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
+        glHint(GL_POLYGON_SMOOTH_HINT, GL_FASTEST);
+        glHint(GL_TEXTURE_COMPRESSION_HINT, GL_FASTEST);
+        glHint(GL_FRAGMENT_SHADER_DERIVATIVE_HINT, GL_FASTEST);
+
     }
 
     void Graphics::Draw(uint vertices, uint instances, Graphics::DrawMode mode) {
@@ -74,10 +81,16 @@ namespace Virtus {
 
     }
 
-    void Graphics::Clear(float color[3]) {
+    void Graphics::Clear(glm::vec3 color) {
 
-        glClearColor(color[0], color[1], color[2], color[3]);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(color.r, color.g, color.b, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    }
+
+    void Graphics::UpdateSurface(Window::Extent extent) {
+
+        glViewport(0, 0, extent[0], extent[1]);
 
     }
 

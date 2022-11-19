@@ -10,7 +10,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 # GLAD
     set(GLAD Virtus/Vendor/glad/src/gl.c)
     include_directories(Virtus/Vendor/glad/include)
-	link_libraries(GL)
 #
 
 # GLFW
@@ -19,6 +18,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 # FMT
     link_libraries(fmt)
+#
+
+# GLM
+#
+
+# STB
 #
 
 file(GLOB Virtus Virtus/*.cpp Virtus/Include/*.hpp)

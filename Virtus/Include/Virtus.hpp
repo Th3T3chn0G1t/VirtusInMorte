@@ -6,12 +6,22 @@
 #include <unordered_map>
 #include <memory>
 #include <functional>
+#include <filesystem>
+#include <exception>
 #include <cstdlib>
+#include <cstring>
 
+#include <stb_image.h>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <fmt/format.h>
 #include <fmt/color.h>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/scalar_constants.hpp>
 
 namespace Virtus {
 
@@ -46,16 +56,52 @@ namespace Virtus {
 
         void MakeActiveSurface();
         bool Poll();
+        void SetCursorCapture(bool);
+        glm::vec2 GetCursor();
+        bool GetKey(int);
 
     };
 
     class Graphics {
 
     public:
+        class Texture;
+        class Image {
+
+            public:
+                enum class Format {
+
+                    R8,
+                    RG8,
+                    RGB8,
+                    RGBA8
+
+                };
+
+            private:
+                usz m_Width;
+                usz m_Height;
+                Format m_Format;
+                std::vector<uchar> m_Data;
+
+            private:
+                uint GetGLFormat();
+
+            public:
+#ifdef __INTELLISENSE
+                Image(std::string&);
+#else
+                Image(std::filesystem::path&);
+#endif
+
+                friend class Texture;
+
+        };
+
         class GLHandle {
 
         public:
-            uint m_UnderlyingHandle = 0;
+            uint m_UnderlyingHandle{0};
 
         public:
             GLHandle() {};
@@ -79,6 +125,38 @@ namespace Virtus {
             void operator()(GLHandle handle) {
                 func(handle);
             }
+
+        };
+
+        class Texture {
+
+        private:
+            static void Deleter(uint handle) { Debug(fmt::format("Deleting Texture {}", handle)); glDeleteTextures(1, &handle); };
+            using Handle = std::unique_ptr<GLHandle, GLDestructor<Deleter>>;        
+
+        public:
+            enum class FilterMode {
+
+                Linear,
+                Nearest
+
+            };
+
+            enum class WrapMode {
+
+                Clamp,
+                Repeat
+
+            };
+
+        private:
+            Handle m_Handle;
+
+        public:
+            Texture(Image&, FilterMode, WrapMode);
+
+            void Bind(uint);
+            void Bind();
 
         };
 
@@ -123,6 +201,38 @@ namespace Virtus {
             Shader(std::vector<Graphics::Shader::Unit>&);
 
             void Bind();
+
+            template<class T>
+            void Uniform(std::string& name, T& value) {
+
+                auto empl = m_Uniforms.try_emplace(name, -1);
+                auto it = empl.first;
+                auto added = empl.second;
+
+                if(added) it->second = glGetUniformLocation(m_Handle.get(), name.c_str());
+
+                     if constexpr (std::is_same<T, float    >::value) glUniform1f(it->second, value);
+                else if constexpr (std::is_same<T, glm::vec2>::value) glUniform2f(it->second, value.x, value.y);
+                else if constexpr (std::is_same<T, glm::vec3>::value) glUniform3f(it->second, value.x, value.y, value.z);
+                else if constexpr (std::is_same<T, glm::vec4>::value) glUniform4f(it->second, value.x, value.y, value.z, value.w);
+
+                else if constexpr (std::is_same<T, int       >::value) glUniform1i(it->second, value);
+                else if constexpr (std::is_same<T, glm::ivec2>::value) glUniform2i(it->second, value.x, value.y);
+                else if constexpr (std::is_same<T, glm::ivec3>::value) glUniform3i(it->second, value.x, value.y, value.z);
+                else if constexpr (std::is_same<T, glm::ivec4>::value) glUniform4i(it->second, value.x, value.y, value.z, value.w);
+
+                else if constexpr (std::is_same<T, uint      >::value) glUniform1ui(it->second, value);
+                else if constexpr (std::is_same<T, glm::uvec2>::value) glUniform2ui(it->second, value.x, value.y);
+                else if constexpr (std::is_same<T, glm::uvec3>::value) glUniform3ui(it->second, value.x, value.y, value.z);
+                else if constexpr (std::is_same<T, glm::uvec4>::value) glUniform4ui(it->second, value.x, value.y, value.z, value.w);
+
+                else if constexpr (std::is_same<T, glm::mat2x2>::value) glUniformMatrix2fv(it->second, 1, false, (float*) &value);
+                else if constexpr (std::is_same<T, glm::mat3x3>::value) glUniformMatrix3fv(it->second, 1, false, (float*) &value);
+                else if constexpr (std::is_same<T, glm::mat4x4>::value) glUniformMatrix4fv(it->second, 1, false, (float*) &value);
+
+                else static_assert("Not a valid uniform type");
+
+            }
 
         };
 
@@ -215,21 +325,20 @@ namespace Virtus {
 
         private:
             Handle m_Handle;
-            BufferLayout m_Layout;
 
             std::vector<VBO> m_VBOs;
 
-            bool m_LayoutApplied = false;
+            uint m_AttributeIndex{0};
 
         private:
-            void ApplyLayout();
+            void ApplyLayout(BufferLayout&);
 
         public:
-            VAO(BufferLayout);
+            VAO();
 
             void Bind();
 
-            VBO& CreateVBO(void*, uint, BufferUsage);
+            VBO& CreateVBO(void*, uint, BufferUsage, BufferLayout&);
 
         };
 
@@ -256,8 +365,9 @@ namespace Virtus {
         Graphics(Window&);
         Graphics() = default;
 
+        void UpdateSurface(Window::Extent);
         void Draw(uint, uint, DrawMode);
-        void Clear(float[3]);
+        void Clear(glm::vec3);
 
     };
 

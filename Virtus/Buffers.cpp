@@ -23,7 +23,7 @@ namespace Virtus {
     
     }
 
-    Graphics::VAO::VAO(BufferLayout layout) : m_Layout(layout) {
+    Graphics::VAO::VAO() {
         
         // We can't setup buffer layout here since there is no vertex buffer bound
         // so creation of a vertex buffer is liased through the VAO and we can defer
@@ -36,7 +36,7 @@ namespace Virtus {
 
     }
 
-    void Graphics::VAO::ApplyLayout() {
+    void Graphics::VAO::ApplyLayout(Graphics::BufferLayout& layout) {
 
         Debug(fmt::format("Setting attributes on VAO {}", (uint) m_Handle.get()));
 
@@ -57,11 +57,11 @@ namespace Virtus {
         };
 
         std::vector<AttributeDetail> details;
-        details.reserve(m_Layout.m_Layout.size());
+        details.reserve(layout.m_Layout.size());
 
         uint total_size = 0;
 
-        for(auto& member : m_Layout.m_Layout) {
+        for(auto& member : layout.m_Layout) {
             
             AttributeDetail detail;
 
@@ -106,24 +106,24 @@ namespace Virtus {
         for(uint i = 0; i < details.size(); ++i) {
 
             auto& detail = details[i];
-            auto& member = m_Layout.m_Layout[i];
+            auto& member = layout.m_Layout[i];
 
             switch(detail.m_Base) {
 
-                case AttributeDetail::Base::Integer: glVertexAttribIPointer(i, member.m_Count, detail.m_Type, total_size, (void*) (uptr) offset); break;
-                case AttributeDetail::Base::Float: glVertexAttribPointer(i, member.m_Count, detail.m_Type, false, total_size, (void*) (uptr) offset); break;
-                case AttributeDetail::Base::Double: glVertexAttribLPointer(i, member.m_Count, detail.m_Type, total_size, (void*) (uptr) offset); break;
+                case AttributeDetail::Base::Integer: glVertexAttribIPointer(m_AttributeIndex + i, member.m_Count, detail.m_Type, total_size, (void*) (uptr) offset); break;
+                case AttributeDetail::Base::Float: glVertexAttribPointer(m_AttributeIndex + i, member.m_Count, detail.m_Type, false, total_size, (void*) (uptr) offset); break;
+                case AttributeDetail::Base::Double: glVertexAttribLPointer(m_AttributeIndex + i, member.m_Count, detail.m_Type, total_size, (void*) (uptr) offset); break;
 
             }
 
-            glEnableVertexAttribArray(i);
-            glVertexAttribDivisor(i, member.m_Divisor);
+            glEnableVertexAttribArray(m_AttributeIndex + i);
+            glVertexAttribDivisor(m_AttributeIndex + i, member.m_Divisor);
 
             offset += detail.m_Size;
 
         }
 
-        m_LayoutApplied = true;
+        m_AttributeIndex += details.size();
 
     }
 
@@ -133,14 +133,16 @@ namespace Virtus {
 
     }
 
-    Graphics::VBO& Graphics::VAO::CreateVBO(void* data, uint size, Graphics::BufferUsage usage) {
+    Graphics::VBO& Graphics::VAO::CreateVBO(void* data, uint size, Graphics::BufferUsage usage, Graphics::BufferLayout& layout) {
 
         Bind();
         m_VBOs.push_back(Graphics::VBO(data, size, usage));
 
-        if(!m_LayoutApplied) ApplyLayout();
+        Graphics::VBO& vbo = m_VBOs.back();
+        vbo.Bind();
+        ApplyLayout(layout);
 
-        return m_VBOs.back();
+        return vbo;
 
     }
 
@@ -172,7 +174,7 @@ namespace Virtus {
         Debug(fmt::format("Created IBO {}", handle));
 
         Bind();
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size(), indices.data(), UsageToGL(usage));
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint), indices.data(), UsageToGL(usage));
 
     }
 

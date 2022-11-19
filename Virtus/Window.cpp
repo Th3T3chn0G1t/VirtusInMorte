@@ -32,6 +32,8 @@ namespace Virtus {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 
+        glfwWindowHint(GLFW_RESIZABLE, false);
+
         m_NativeWindow = glfwCreateWindow(extent[0], extent[1], title.c_str(), nullptr, nullptr);
 
         glfwSetWindowPos(m_NativeWindow, position[0], position[1]);
@@ -71,6 +73,28 @@ namespace Virtus {
         glfwSwapBuffers(m_NativeWindow);
 
         return glfwWindowShouldClose(m_NativeWindow);
+
+    }
+
+    void Window::SetCursorCapture(bool capture) {
+
+        glfwSetInputMode(m_NativeWindow, GLFW_CURSOR, capture ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+
+    }
+
+    glm::vec2 Window::GetCursor() {
+
+        double x = 0.0f;
+        double y = 0.0f;
+        glfwGetCursorPos(m_NativeWindow, &x, &y);
+
+        return {x, y};
+
+    }
+
+    bool Window::GetKey(int key) {
+
+        return glfwGetKey(m_NativeWindow, key);
 
     }
 
