@@ -62,6 +62,7 @@ namespace Virtus {
         }
 
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
 
         glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
         glHint(GL_POLYGON_SMOOTH_HINT, GL_FASTEST);

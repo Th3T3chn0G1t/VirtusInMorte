@@ -26,6 +26,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 # STB
 #
 
+# Assimp
+    link_libraries(assimp)
+#
+
 file(GLOB Virtus Virtus/*.cpp Virtus/Include/*.hpp)
 include_directories(Virtus/Include)
 add_executable(Virtus ${Virtus} ${GLAD})

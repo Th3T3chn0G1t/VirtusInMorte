@@ -27,7 +27,7 @@ namespace Virtus {
 #else
     Graphics::Image::Image(std::filesystem::path& path) {
 
-        if(!std::filesystem::exists(path)) throw std::runtime_error(fmt::format("No such file {}", path.string()));
+        if(!std::filesystem::exists(path)) Fatal(fmt::format("No such file {}", path.string()));
 #endif
 
         int width = 0;
