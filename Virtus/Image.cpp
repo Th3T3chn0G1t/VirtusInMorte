@@ -22,24 +22,17 @@ namespace Virtus {
 
     }
 
-#ifdef __INTELLISENSE
     Graphics::Image::Image(std::string& path) {
-#else
-    Graphics::Image::Image(std::filesystem::path& path) {
 
-        if(!std::filesystem::exists(path)) Fatal(fmt::format("No such file {}", path.string()));
+#ifndef __INTELLISENSE
+        if(!std::filesystem::exists(path)) Fatal(fmt::format("No such file {}", path));
 #endif
-
         int width = 0;
         int height = 0;
         int channels = 0;
 
         stbi_set_flip_vertically_on_load(true);
-#ifdef __INTELLISENSE
         uchar* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-#else
-        uchar* data = stbi_load(path.string().c_str(), &width, &height, &channels, 0);
-#endif
 
         usz count = width * height * channels;
 

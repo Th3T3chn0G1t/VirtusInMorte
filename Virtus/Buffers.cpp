@@ -16,18 +16,9 @@ namespace Virtus {
         }
 
     }
-    
-    void Graphics::BufferLayout::Push(Member member) {
-    
-        m_Layout.push_back(member);
-    
-    }
 
     Graphics::VAO::VAO() {
         
-        // We can't setup buffer layout here since there is no vertex buffer bound
-        // so creation of a vertex buffer is liased through the VAO and we can defer
-        // buffer layout until then
         uint handle = 0;
         glGenVertexArrays(1, &handle);
         m_Handle.reset(handle);
@@ -57,25 +48,25 @@ namespace Virtus {
         };
 
         std::vector<AttributeDetail> details;
-        details.reserve(layout.m_Layout.size());
+        details.reserve(layout.size());
 
         uint total_size = 0;
 
-        for(auto& member : layout.m_Layout) {
+        for(auto& member : layout) {
             
             AttributeDetail detail;
 
             switch(member.m_Type) {
 
-                case Graphics::BufferLayout::Member::Type::SignedByte: detail = {GL_BYTE, AttributeDetail::Base::Integer, 0}; break;
-                case Graphics::BufferLayout::Member::Type::UnsignedByte: detail = {GL_UNSIGNED_BYTE, AttributeDetail::Base::Integer, 0}; break;
-                case Graphics::BufferLayout::Member::Type::SignedShort: detail = {GL_SHORT, AttributeDetail::Base::Integer, 0}; break;
-                case Graphics::BufferLayout::Member::Type::UnsignedShort: detail = {GL_UNSIGNED_SHORT, AttributeDetail::Base::Integer, 0}; break;
-                case Graphics::BufferLayout::Member::Type::SignedInt: detail = {GL_INT, AttributeDetail::Base::Integer, 0}; break;
-                case Graphics::BufferLayout::Member::Type::UnsignedInt: detail = {GL_UNSIGNED_INT, AttributeDetail::Base::Integer, 0}; break;
-                case Graphics::BufferLayout::Member::Type::HalfFloat: detail = {GL_HALF_FLOAT, AttributeDetail::Base::Float, 0}; break;
-                case Graphics::BufferLayout::Member::Type::FullFloat: detail = {GL_FLOAT, AttributeDetail::Base::Float, 0}; break;
-                case Graphics::BufferLayout::Member::Type::DoubleFloat: detail = {GL_DOUBLE, AttributeDetail::Base::Double, 0}; break;
+                case Graphics::VertexAttribute::Type::SignedByte: detail = {GL_BYTE, AttributeDetail::Base::Integer, 0}; break;
+                case Graphics::VertexAttribute::Type::UnsignedByte: detail = {GL_UNSIGNED_BYTE, AttributeDetail::Base::Integer, 0}; break;
+                case Graphics::VertexAttribute::Type::SignedShort: detail = {GL_SHORT, AttributeDetail::Base::Integer, 0}; break;
+                case Graphics::VertexAttribute::Type::UnsignedShort: detail = {GL_UNSIGNED_SHORT, AttributeDetail::Base::Integer, 0}; break;
+                case Graphics::VertexAttribute::Type::SignedInt: detail = {GL_INT, AttributeDetail::Base::Integer, 0}; break;
+                case Graphics::VertexAttribute::Type::UnsignedInt: detail = {GL_UNSIGNED_INT, AttributeDetail::Base::Integer, 0}; break;
+                case Graphics::VertexAttribute::Type::HalfFloat: detail = {GL_HALF_FLOAT, AttributeDetail::Base::Float, 0}; break;
+                case Graphics::VertexAttribute::Type::FullFloat: detail = {GL_FLOAT, AttributeDetail::Base::Float, 0}; break;
+                case Graphics::VertexAttribute::Type::DoubleFloat: detail = {GL_DOUBLE, AttributeDetail::Base::Double, 0}; break;
 
             }
 
@@ -106,7 +97,7 @@ namespace Virtus {
         for(uint i = 0; i < details.size(); ++i) {
 
             auto& detail = details[i];
-            auto& member = layout.m_Layout[i];
+            auto& member = layout[i];
 
             switch(detail.m_Base) {
 
@@ -132,6 +123,7 @@ namespace Virtus {
         glBindVertexArray(m_Handle.get());
 
     }
+
 
     Graphics::VBO& Graphics::VAO::CreateVBO(void* data, uint size, Graphics::BufferUsage usage, Graphics::BufferLayout& layout) {
 

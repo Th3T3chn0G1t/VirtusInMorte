@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <array>
 #include <unordered_map>
 #include <memory>
 #include <functional>
@@ -89,11 +90,8 @@ namespace Virtus {
                 uint GetGLFormat();
 
             public:
-#ifdef __INTELLISENSE
+                Image() = default;
                 Image(std::string&);
-#else
-                Image(std::filesystem::path&);
-#endif
 
                 friend class Texture;
 
@@ -188,7 +186,8 @@ namespace Virtus {
                 Handle m_Handle;
 
             public:
-                Unit(Stage, std::string&);
+                Unit() = default;
+                Unit(std::string&);
 
                 friend class Shader;
     
@@ -199,7 +198,7 @@ namespace Virtus {
             std::unordered_map<std::string, uint> m_Uniforms;
 
         public:
-            Shader(std::vector<Graphics::Shader::Unit>&);
+            Shader(Graphics::Shader::Unit&, Graphics::Shader::Unit&);
 
             void Bind();
 
@@ -254,46 +253,78 @@ namespace Virtus {
 
         };
 
-        class BufferLayout {
+        class VertexAttribute {
 
         public:
-            class Member {
+            enum class Type {
 
-            public:
-                enum class Type {
+                SignedByte,
+                UnsignedByte,
 
-                    SignedByte,
-                    UnsignedByte,
+                SignedShort,
+                UnsignedShort,
 
-                    SignedShort,
-                    UnsignedShort,
+                SignedInt,
+                UnsignedInt,
 
-                    SignedInt,
-                    UnsignedInt,
-
-                    HalfFloat,
-                    FullFloat,
-                    DoubleFloat
-
-                };
-
-            public:
-                Type m_Type;
-                uint m_Count;
-                uint m_Divisor;
-
-            public:
-                Member(Type type, uint count, uint divisor) : m_Type(type), m_Count(count), m_Divisor(divisor) {}
+                HalfFloat,
+                FullFloat,
+                DoubleFloat
 
             };
 
         public:
-            std::vector<Member> m_Layout;
+            Type m_Type;
+            uint m_Count;
+            uint m_Divisor;
 
         public:
-            BufferLayout(std::vector<Member>& layout) : m_Layout(layout) {};
+            VertexAttribute(Type type, uint count, uint divisor) : m_Type(type), m_Count(count), m_Divisor(divisor) {}
 
-            void Push(Member);
+        };
+
+        using BufferLayout = std::vector<VertexAttribute>;
+
+        class Vertex {
+
+        public:
+            static BufferLayout Layout;
+
+        public:
+            glm::vec3 m_Position;
+            glm::vec4 m_Color;
+            glm::vec2 m_UV;
+            glm::vec3 m_Normal;
+
+        };
+
+        class InstanceData {
+
+        public:
+            static BufferLayout Layout;
+
+        public:
+            glm::mat4 m_Transform;
+            glm::mat3 m_Normal;
+            uint m_SpecularStrength;
+            float m_Shininess;
+            uint m_DoSample;
+
+        public:
+            InstanceData(glm::vec3 position = {0.0f, 0.0f, 0.0f}, glm::vec3 rotation = {0.0f, 0.0f, 0.0f}, glm::vec3 scale = {1.0f, 1.0f, 1.0f}, uint specular = 0, float shininess = 0.5f, uint do_sample = true) : m_SpecularStrength(specular), m_Shininess(shininess), m_DoSample(do_sample) {
+
+                glm::mat4 transform(1.0f);
+
+                transform = glm::translate(transform, position);
+                transform = glm::rotate(transform, rotation.x, {1.0f, 0.0f, 0.0f});
+                transform = glm::rotate(transform, rotation.y, {0.0f, 1.0f, 0.0f});
+                transform = glm::rotate(transform, rotation.z, {0.0f, 0.0f, 1.0f});
+                transform = glm::scale(transform, scale);
+
+                m_Transform = transform;
+                m_Normal = glm::mat3(glm::transpose(glm::inverse(transform)));
+
+            }
 
         };
 
@@ -333,13 +364,19 @@ namespace Virtus {
 
         private:
             void ApplyLayout(BufferLayout&);
+            VBO& CreateVBO(void*, uint, BufferUsage, BufferLayout&);
 
         public:
             VAO();
 
             void Bind();
 
-            VBO& CreateVBO(void*, uint, BufferUsage, BufferLayout&);
+            template<class T>
+            VBO& CreateVBO(std::vector<T> data, Graphics::BufferUsage usage, Graphics::BufferLayout& layout) {
+
+                return CreateVBO((void*) data.data(), data.size() * sizeof(T), usage, layout);
+
+            }
 
         };
 
@@ -359,6 +396,32 @@ namespace Virtus {
 
         };
 
+        class Mesh {
+
+        public:
+            class Element {
+
+            public:
+                VAO m_VAO;
+                IBO m_IBO;
+
+                usz m_IndexCount;
+                usz m_VertexCount;
+
+            public:
+                void Bind();
+
+            };
+
+        public:
+            std::vector<Element> m_Elements;
+
+        public:
+            Mesh() = default;
+            Mesh(std::string&);
+
+        };
+
     private:
         std::vector<std::string> m_SupportedExtensions;
 
@@ -372,15 +435,40 @@ namespace Virtus {
 
     };
 
-    class Context {
+    template<class T, usz ResourcePoolSize>
+    class ResourceLoader {
 
-    public:
-        std::shared_ptr<Graphics> m_Graphics;
-        std::shared_ptr<Window> m_Window;
+        private:
+            std::string m_ResourceDirectory;
+            std::array<T, ResourcePoolSize> m_Resources;
+            usz m_ResourcesLast{0};
+            std::unordered_map<std::string, usz> m_Map;
 
-    public:
-        Context(std::shared_ptr<Window>, std::shared_ptr<Graphics>);
+        public:
+            ResourceLoader(std::string resource_directory) : m_ResourceDirectory(resource_directory) {}
+
+            T& Get(std::string& path) {
+
+                auto empl = m_Map.try_emplace(path, ResourcePoolSize);
+                auto it = empl.first;
+                auto added = empl.second;
+
+                if(added) {
+
+                    std::string rdir_path = fmt::format("{}/{}", m_ResourceDirectory, path);
+                    m_Resources[m_ResourcesLast] = std::move(T(rdir_path));
+                    it->second = m_ResourcesLast++;
+
+                }
+
+                return m_Resources[it->second];
+
+            }
 
     };
+
+    using ImageLoader = ResourceLoader<Graphics::Image, 1024>;
+    using ShaderUnitLoader = ResourceLoader<Graphics::Shader::Unit, 1024>;
+    using MeshLoader = ResourceLoader<Graphics::Mesh, 1024>;
 
 }

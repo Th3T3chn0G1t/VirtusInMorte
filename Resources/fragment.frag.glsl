@@ -1,5 +1,7 @@
 #version 410 core
 
+#pragma fragment
+
 in vec4 o_Color;
 in vec2 o_UV;
 flat in uint o_DoSample;
