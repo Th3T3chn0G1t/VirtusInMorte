@@ -9,12 +9,11 @@ layout(location = 4) in mat4 i_Transform;
 // layout(location = 5) ...;
 // layout(location = 6) ...;
 // layout(location = 7) ...;
-
 layout(location = 8) in mat3 i_Normal;
 // layout(location = 9) ...;
 // layout(location = 10) ...;
-
 layout(location = 11) in uint i_Specular;
+layout(location = 12) in uint i_DoSample;
 
 uniform mat4 u_VP;
 uniform float u_Time;
@@ -24,7 +23,7 @@ uniform float u_Specular;
 
 out vec4 o_Color;
 out vec2 o_UV;
-out vec3 o_Normal;
+flat out uint o_DoSample;
 
 void main() {
     vec3 test_light_color = vec3(1.0, 0.0, 0.0);
@@ -47,5 +46,5 @@ void main() {
   
     o_Color = v_Color * vec4(u_AmbientLight + diffuse + specular, 1.0);
     o_UV = v_UV;
-    o_Normal = normal;
+    o_DoSample = i_DoSample;
 }
