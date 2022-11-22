@@ -11,6 +11,10 @@ int main(int argc, char** argv) {
 
     }
 
+    // TODO: Pipeline state object to reduce GL calls
+    //       Especially binding, which may currently involve redundant
+    //       Re-binds
+
     std::string title = "Virtus in Morte";
     Virtus::Window::Extent extent {640, 480};
     Virtus::Window window(extent, Virtus::Window::Position{0, 0}, title);
@@ -20,84 +24,18 @@ int main(int argc, char** argv) {
     Virtus::ImageLoader image_loader(resource_dir);
     Virtus::ShaderUnitLoader shader_unit_loader(resource_dir);
     Virtus::MeshLoader mesh_loader(resource_dir);
+    Virtus::MaterialLoader material_loader(resource_dir);
 
-    std::vector<Virtus::Graphics::Vertex> mesh {
-
-        {{-0.5f, -0.5f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-        {{ 0.5f, -0.5f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-        {{-0.5f,  0.5f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}},
-        {{ 0.5f,  0.5f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}}
-
-    };
-
-    std::vector<uint> indices {
-        0, 1, 2,
-        1, 3, 2
-    };
-
-    Virtus::Graphics::IBO ibo(indices, Virtus::Graphics::BufferUsage::StaticDraw);
-
-    std::vector<Virtus::Graphics::InstanceData> instance_data {
-
-        {{-3.0f, 0.0f, -2.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{-2.0f, 0.0f, -2.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{-1.0f, 0.0f, -2.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{0.0f, 0.0f, -2.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{1.0f, 0.0f, -2.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{2.0f, 0.0f, -2.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{3.0f, 0.0f, -2.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-
-        {{-3.0f, 0.0f, 2.0f}, {0.0f, glm::radians(180.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{-2.0f, 0.0f, 2.0f}, {0.0f, glm::radians(180.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{-1.0f, 0.0f, 2.0f}, {0.0f, glm::radians(180.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{0.0f, 0.0f, 2.0f}, {0.0f, glm::radians(180.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{1.0f, 0.0f, 2.0f}, {0.0f, glm::radians(180.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{2.0f, 0.0f, 2.0f}, {0.0f, glm::radians(180.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{3.0f, 0.0f, 2.0f}, {0.0f, glm::radians(180.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-
-        {{-2.0f, 0.0f, -3.0f}, {0.0f, glm::radians(90.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{-2.0f, 0.0f, -2.0f}, {0.0f, glm::radians(90.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{-2.0f, 0.0f, -1.0f}, {0.0f, glm::radians(90.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{-2.0f, 0.0f, 0.0f}, {0.0f, glm::radians(90.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{-2.0f, 0.0f, 1.0f}, {0.0f, glm::radians(90.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{-2.0f, 0.0f, 2.0f}, {0.0f, glm::radians(90.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{-2.0f, 0.0f, 3.0f}, {0.0f, glm::radians(90.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-
-        {{2.0f, 0.0f, -3.0f}, {0.0f, glm::radians(270.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{2.0f, 0.0f, -2.0f}, {0.0f, glm::radians(270.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{2.0f, 0.0f, -1.0f}, {0.0f, glm::radians(270.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{2.0f, 0.0f, 0.0f}, {0.0f, glm::radians(270.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{2.0f, 0.0f, 1.0f}, {0.0f, glm::radians(270.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{2.0f, 0.0f, 2.0f}, {0.0f, glm::radians(270.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16},
-        {{2.0f, 0.0f, 3.0f}, {0.0f, glm::radians(270.0f), 0.0f}, {1.0f, 1.0f, 1.0f}, 16}
-
-    };
-
-    Virtus::Graphics::VAO vao;
-    vao.CreateVBO(mesh, Virtus::Graphics::BufferUsage::StaticDraw, Virtus::Graphics::Vertex::Layout);
-    vao.CreateVBO(instance_data, Virtus::Graphics::BufferUsage::StaticDraw, Virtus::Graphics::InstanceData::Layout);
-
-    std::string instanced_vertex_path = "instanced.vert.glsl";
+    std::string vertex_path = "instanced.vert.glsl";
     std::string fragment_path = "fragment.frag.glsl";
-    Virtus::Graphics::Shader::Unit& instanced_vertex = shader_unit_loader.Get(instanced_vertex_path);
+    Virtus::Graphics::Shader::Unit& vertex = shader_unit_loader.Get(vertex_path);
     Virtus::Graphics::Shader::Unit& fragment = shader_unit_loader.Get(fragment_path);
-    Virtus::Graphics::Shader instanced_shader(instanced_vertex, fragment);
+    Virtus::Graphics::Shader shader(vertex, fragment);
 
     std::string image_path = "test.bmp";
     Virtus::Graphics::Texture texture(image_loader.Get(image_path), Virtus::Graphics::Texture::FilterMode::Linear, Virtus::Graphics::Texture::WrapMode::Clamp);
 
-    std::string mesh_path = "test.obj";
-    Virtus::Graphics::Mesh& loaded_mesh = mesh_loader.Get(mesh_path);
-    std::vector<Virtus::Graphics::InstanceData> loaded_instance_data {
-
-        {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.5f, 0.5f, 0.5f}, 16, 0.8f, false}
-
-    };
-    loaded_mesh.m_Elements[0].m_VAO.CreateVBO(loaded_instance_data, Virtus::Graphics::BufferUsage::StaticDraw, Virtus::Graphics::InstanceData::Layout);
-
     glm::mat4 projection(glm::perspective(glm::radians(75.0f), (float) extent[0] / (float) extent[1], 0.01f, 100.0f));
-
-    glm::vec2 last_cursor(0.0f, 0.0f);
 
     struct Camera {
 
@@ -107,6 +45,11 @@ int main(int argc, char** argv) {
     };
 
     Camera camera{{25.0f, 40.0f, 0.0f}, {2.0f, 0.0f, -1.0f}};
+
+    glm::vec2 last_cursor(0.0f, 0.0f);
+
+    std::string map_path = fmt::format("{}/0.map.yaml", resource_dir);
+    Virtus::Map map(map_path, image_loader, shader_unit_loader, mesh_loader, material_loader);
 
     Virtus::Info("Hello, Virtus!");
 
@@ -142,58 +85,34 @@ int main(int argc, char** argv) {
 
         graphics.Clear({0.8f, 0.4f, 0.3f});
 
-        instanced_shader.Bind();
-        vao.Bind();
-        ibo.Bind();
+        shader.Bind();
 
         int unit(0);
         texture.Bind(unit);
 
         std::string u_Texture("u_Texture");
-        instanced_shader.Uniform(u_Texture, unit);
+        shader.Uniform(u_Texture, unit);
 
         std::string u_VP("u_VP");
         glm::mat4 VP(projection * view);
-        instanced_shader.Uniform(u_VP, VP);
+        shader.Uniform(u_VP, VP);
 
         std::string u_AmbientLight("u_AmbientLight");
         glm::vec3 ambient_light(0.2f, 0.2f, 0.2f);
-        instanced_shader.Uniform(u_AmbientLight, ambient_light);
+        shader.Uniform(u_AmbientLight, ambient_light);
 
         std::string u_ViewPosition("u_ViewPosition");
-        instanced_shader.Uniform(u_ViewPosition, camera.m_Position);
+        shader.Uniform(u_ViewPosition, camera.m_Position);
 
         std::string u_Time("u_Time");
         float time{static_cast<float>(glfwGetTime())};
-        instanced_shader.Uniform(u_Time, time);
+        shader.Uniform(u_Time, time);
 
         std::string u_Viewport("u_Viewport");
         glm::vec2 viewport(extent[0], extent[1]);
-        instanced_shader.Uniform(u_Viewport, viewport);
+        shader.Uniform(u_Viewport, viewport);
 
-        std::string u_LightCount("u_LightCount");
-        uint light_count = 2;
-        instanced_shader.Uniform(u_LightCount, light_count);
-
-        std::string u_LightPositions("u_LightPositions");
-        std::vector<glm::vec3> light_positions {
-            {1.0f, 1.0f, 1.0f},
-            {-1.0f, -1.0f, -1.0f}
-        };
-        instanced_shader.Uniform(u_LightPositions, light_positions);
-
-        std::string u_LightColors("u_LightColors");
-        std::vector<glm::vec3> light_colors {
-            {1.0f, 0.0f, 1.0f},
-            {0.0f, 1.0f, 0.0f},
-        };
-        instanced_shader.Uniform(u_LightColors, light_colors);
-
-        graphics.Draw(indices.size(), instance_data.size(), Virtus::Graphics::DrawMode::Indexed);
-
-        loaded_mesh.m_Elements[0].Bind();
-
-        graphics.Draw(loaded_mesh.m_Elements[0].m_IndexCount, 1, Virtus::Graphics::DrawMode::Indexed);
+        map.Draw(graphics, shader);
 
     }
 

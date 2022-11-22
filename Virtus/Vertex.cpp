@@ -13,7 +13,7 @@ namespace Virtus {
 
     };
 
-    Graphics::BufferLayout Graphics::InstanceData::Layout = {
+    Graphics::BufferLayout Graphics::Transform::Layout = {
 
         // TODO: Special case for matrices
         {VertexAttribute::Type::FullFloat, 4, 1},
@@ -23,12 +23,7 @@ namespace Virtus {
 
         {VertexAttribute::Type::FullFloat, 3, 1},
         {VertexAttribute::Type::FullFloat, 3, 1},
-        {VertexAttribute::Type::FullFloat, 3, 1},
-
-        {VertexAttribute::Type::UnsignedInt, 1, 1},
-        {VertexAttribute::Type::FullFloat, 1, 1},
-
-        {VertexAttribute::Type::UnsignedInt, 1, 1}
+        {VertexAttribute::Type::FullFloat, 3, 1}
 
     };
 

@@ -1,0 +1,29 @@
+geometry: [
+# TODO: Notation for instanced draws - array of transforms + materials
+  {
+    path: 'test.obj',
+    transform: [ [ 0.0, 0.0, 0.0 ], [ 0.0, 0.0, 0.0 ], [ 0.5, 0.5, 0.5 ] ],
+    material: 'test.mat.yaml'
+  },
+  {
+    path: 'untitled.obj',
+    transform: [ [ 2.0, 0.0, 0.0 ], [ 0.0, 0.0, 0.0 ], [ 0.5, 0.5, 0.5 ] ],
+    material: 'test.mat.yaml'
+  }
+]
+
+lights:
+  point: [
+    {
+      position: [ 1.0, 1.0, 1.0 ],
+      color: [ 1.0, 0.0, 0.0 ]
+    },
+    {
+      position: [ -1.0, 1.0, -1.0 ],
+      color: [ 0.0, 1.0, 0.0 ]
+    },
+    {
+      position: [ -1.0, -1.0, 1.0 ],
+      color: [ 0.0, 0.0, 1.0 ]
+    }
+  ]

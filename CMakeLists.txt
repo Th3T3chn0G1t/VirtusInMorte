@@ -30,6 +30,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
     link_libraries(assimp)
 #
 
+# Yaml-cpp
+    link_libraries(yaml-cpp)
+#
+
 file(GLOB Virtus Virtus/*.cpp Virtus/Include/*.hpp)
 include_directories(Virtus/Include)
 add_executable(Virtus ${Virtus} ${GLAD})

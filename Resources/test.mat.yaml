@@ -1,0 +1,4 @@
+# TODO: `static` flag
+specular: 16
+shininess: 0.5
+sample: false

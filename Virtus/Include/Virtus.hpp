@@ -24,6 +24,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <yaml-cpp/yaml.h>
 
 namespace Virtus {
 
@@ -317,20 +318,19 @@ namespace Virtus {
 
         };
 
-        class InstanceData {
+        class Transform {
 
         public:
             static BufferLayout Layout;
 
         public:
             glm::mat4 m_Transform;
+
+        private:
             glm::mat3 m_Normal;
-            uint m_SpecularStrength;
-            float m_Shininess;
-            uint m_DoSample;
 
         public:
-            InstanceData(glm::vec3 position = {0.0f, 0.0f, 0.0f}, glm::vec3 rotation = {0.0f, 0.0f, 0.0f}, glm::vec3 scale = {1.0f, 1.0f, 1.0f}, uint specular = 0, float shininess = 0.5f, uint do_sample = true) : m_SpecularStrength(specular), m_Shininess(shininess), m_DoSample(do_sample) {
+            Transform(glm::vec3 position = {0.0f, 0.0f, 0.0f}, glm::vec3 rotation = {0.0f, 0.0f, 0.0f}, glm::vec3 scale = {1.0f, 1.0f, 1.0f}) {
 
                 glm::mat4 transform(1.0f);
 
@@ -344,6 +344,23 @@ namespace Virtus {
                 m_Normal = glm::mat3(glm::transpose(glm::inverse(transform)));
 
             }
+
+        };
+
+        class Material {
+
+        public:
+            static BufferLayout Layout;
+
+        public:
+            uint m_SpecularStrength;
+            float m_Shininess;
+            uint m_DoSample;
+
+        public:
+            Material() = default;
+            Material(uint specular_strength, float shininess, uint do_sample) : m_SpecularStrength(specular_strength), m_Shininess(shininess), m_DoSample(do_sample) {}
+            Material(std::string&);
 
         };
 
@@ -475,6 +492,8 @@ namespace Virtus {
                 if(added) {
 
                     std::string rdir_path = fmt::format("{}/{}", m_ResourceDirectory, path);
+                    Debug(fmt::format("Loading resource at `{}`", rdir_path));
+
                     m_Resources[m_ResourcesLast] = std::move(T(rdir_path));
                     it->second = m_ResourcesLast++;
 
@@ -489,5 +508,20 @@ namespace Virtus {
     using ImageLoader = ResourceLoader<Graphics::Image, 1024>;
     using ShaderUnitLoader = ResourceLoader<Graphics::Shader::Unit, 1024>;
     using MeshLoader = ResourceLoader<Graphics::Mesh, 1024>;
+    using MaterialLoader = ResourceLoader<Graphics::Material, 1024>;
+
+    class Map {
+
+    public:
+        std::vector<Graphics::Mesh*> m_Geometry;
+        std::vector<glm::vec3> m_PointLightPositions;
+        std::vector<glm::vec3> m_PointLightColors;
+
+    public:
+        Map(std::string&, ImageLoader&, ShaderUnitLoader&, MeshLoader&, MaterialLoader&);
+
+        void Draw(Graphics&, Graphics::Shader&);
+
+    };
 
 }
