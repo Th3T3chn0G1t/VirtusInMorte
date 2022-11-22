@@ -230,6 +230,25 @@ namespace Virtus {
                 else if constexpr (std::is_same<T, glm::mat3x3>::value) glUniformMatrix3fv(it->second, 1, false, (float*) &value);
                 else if constexpr (std::is_same<T, glm::mat4x4>::value) glUniformMatrix4fv(it->second, 1, false, (float*) &value);
 
+                else if constexpr (std::is_same<T, std::vector<float    >>::value) glUniform1fv(it->second, value.size(), value.data());
+                else if constexpr (std::is_same<T, std::vector<glm::vec2>>::value) glUniform2fv(it->second, value.size(), (float*) value.data());
+                else if constexpr (std::is_same<T, std::vector<glm::vec3>>::value) glUniform3fv(it->second, value.size(), (float*) value.data());
+                else if constexpr (std::is_same<T, std::vector<glm::vec4>>::value) glUniform4fv(it->second, value.size(), (float*) value.data());
+
+                else if constexpr (std::is_same<T, std::vector<int       >>::value) glUniform1iv(it->second, value.size(), value.data());
+                else if constexpr (std::is_same<T, std::vector<glm::ivec2>>::value) glUniform2iv(it->second, value.size(), (int*) value.data());
+                else if constexpr (std::is_same<T, std::vector<glm::ivec3>>::value) glUniform3iv(it->second, value.size(), (int*) value.data());
+                else if constexpr (std::is_same<T, std::vector<glm::ivec4>>::value) glUniform4iv(it->second, value.size(), (int*) value.data());
+
+                else if constexpr (std::is_same<T, std::vector<uint      >>::value) glUniform1uiv(it->second, value.size(), value.data());
+                else if constexpr (std::is_same<T, std::vector<glm::uvec2>>::value) glUniform2uiv(it->second, value.size(), (uint*) value.data());
+                else if constexpr (std::is_same<T, std::vector<glm::uvec3>>::value) glUniform3uiv(it->second, value.size(), (uint*) value.data());
+                else if constexpr (std::is_same<T, std::vector<glm::uvec4>>::value) glUniform4uiv(it->second, value.size(), (uint*) value.data());
+
+                else if constexpr (std::is_same<T, std::vector<glm::mat2x2>>::value) glUniformMatrix2fv(it->second, value.size(), false, (float*) value.data());
+                else if constexpr (std::is_same<T, std::vector<glm::mat3x3>>::value) glUniformMatrix3fv(it->second, value.size(), false, (float*) value.data());
+                else if constexpr (std::is_same<T, std::vector<glm::mat4x4>>::value) glUniformMatrix4fv(it->second, value.size(), false, (float*) value.data());
+
                 else static_assert("Not a valid uniform type");
 
             }

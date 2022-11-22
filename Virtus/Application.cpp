@@ -171,6 +171,24 @@ int main(int argc, char** argv) {
         glm::vec2 viewport(extent[0], extent[1]);
         instanced_shader.Uniform(u_Viewport, viewport);
 
+        std::string u_LightCount("u_LightCount");
+        uint light_count = 2;
+        instanced_shader.Uniform(u_LightCount, light_count);
+
+        std::string u_LightPositions("u_LightPositions");
+        std::vector<glm::vec3> light_positions {
+            {1.0f, 1.0f, 1.0f},
+            {-1.0f, -1.0f, -1.0f}
+        };
+        instanced_shader.Uniform(u_LightPositions, light_positions);
+
+        std::string u_LightColors("u_LightColors");
+        std::vector<glm::vec3> light_colors {
+            {1.0f, 0.0f, 1.0f},
+            {0.0f, 1.0f, 0.0f},
+        };
+        instanced_shader.Uniform(u_LightColors, light_colors);
+
         graphics.Draw(indices.size(), instance_data.size(), Virtus::Graphics::DrawMode::Indexed);
 
         loaded_mesh.m_Elements[0].Bind();

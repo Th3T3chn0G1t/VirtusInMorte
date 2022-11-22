@@ -22,31 +22,36 @@ uniform mat4 u_VP;
 uniform float u_Time;
 uniform vec3 u_AmbientLight;
 uniform vec3 u_ViewPosition;
+uniform vec3 u_LightPositions[128];
+uniform vec3 u_LightColors[128];
+uniform uint u_LightCount;
 
 out vec4 o_Color;
 out vec2 o_UV;
 flat out uint o_DoSample;
 
 void main() {
-    vec3 test_light_color = vec3(1.0, 0.0, 0.0);
-    vec3 test_light_position = vec3(cos(u_Time), 1.0, sin(u_Time));
-
     vec4 model = i_Transform * vec4(v_Position, 1.0);
 
-    vec3 light_direction = normalize(test_light_position - model.xyz);
-    vec3 normal = normalize(i_Normal * v_Normal);
+    vec3 calculated = vec3(0.0);
+    for(uint i = 0; i < u_LightCount; ++i) {
+        vec3 light_direction = normalize(u_LightPositions[i] - model.xyz);
+        vec3 normal = normalize(i_Normal * v_Normal);
 
-    vec3 view_direction = normalize(u_ViewPosition - model.xyz);
-    vec3 reflect_direction = reflect(-light_direction, normal);  
+        vec3 view_direction = normalize(u_ViewPosition - model.xyz);
+        vec3 reflect_direction = reflect(-light_direction, normal);  
 
-    float specular_component = pow(max(dot(view_direction, reflect_direction), 0.0), i_SpecularStrength);
-    vec3 specular = i_Shininess * specular_component * test_light_color;  
+        float specular_component = pow(max(dot(view_direction, reflect_direction), 0.0), i_SpecularStrength);
+        vec3 specular = i_Shininess * specular_component * u_LightColors[i];  
 
-    vec3 diffuse = test_light_color * max(dot(normal, light_direction), 0.0);
+        vec3 diffuse = u_LightColors[i] * max(dot(normal, light_direction), 0.0);
+
+        calculated += diffuse + specular;
+    }
 
     gl_Position = u_VP * model;
   
-    o_Color = v_Color * vec4(u_AmbientLight + diffuse + specular, 1.0);
+    o_Color = v_Color * vec4(u_AmbientLight + calculated, 1.0);
     o_UV = v_UV;
     o_DoSample = i_DoSample;
 }
