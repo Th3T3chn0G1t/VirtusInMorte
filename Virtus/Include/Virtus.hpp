@@ -25,6 +25,10 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <yaml-cpp/yaml.h>
+#include <nuklear.h>
+extern "C" {
+    #include <nuklear_glfw_gl3.h>
+}
 
 namespace Virtus {
 
@@ -50,7 +54,9 @@ namespace Virtus {
         using Extent = uint[2];
         using Position = int[2];
 
-    private:
+    // private:
+    // TODO: Add as friend to UI class
+    public:
         GLFWwindow* m_NativeWindow;
 
     public:

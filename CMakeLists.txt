@@ -34,7 +34,23 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
     link_libraries(yaml-cpp)
 #
 
-file(GLOB Virtus Virtus/*.cpp Virtus/Include/*.hpp)
+# Nuklear
+    include_directories(Virtus/Vendor/nuklear)
+    add_compile_definitions(
+            NK_INCLUDE_FIXED_TYPES
+            NK_INCLUDE_DEFAULT_ALLOCATOR
+            NK_INCLUDE_STANDARD_IO
+            NK_INCLUDE_STANDARD_VARARGS
+            NK_INCLUDE_STANDARD_BOOL
+            NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+            NK_INCLUDE_FONT_BAKING
+            NK_INCLUDE_DEFAULT_FONT
+            NK_INCLUDE_COMMAND_USERDATA
+    )
+#
+
+file(GLOB Virtus Virtus/*.cpp Virtus/*.c Virtus/Include/*.hpp)
+set_property(SOURCE Virtus/SingleHeaderImplementation.c PROPERTY SKIP_PRECOMPILE_HEADERS)
 include_directories(Virtus/Include)
 add_executable(Virtus ${Virtus} ${GLAD})
 target_precompile_headers(Virtus PUBLIC "$<$<COMPILE_LANGUAGE:CXX>:<Virtus.hpp$<ANGLE-R>>")

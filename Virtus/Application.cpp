@@ -47,13 +47,26 @@ int main(int argc, char** argv) {
     Camera camera{{25.0f, 40.0f, 0.0f}, {2.0f, 0.0f, -1.0f}};
 
     glm::vec2 last_cursor(0.0f, 0.0f);
+    bool captured = true;
 
     std::string map_path = fmt::format("{}/0.map.yaml", resource_dir);
     Virtus::Map map(map_path, image_loader, shader_unit_loader, mesh_loader, material_loader);
 
     Virtus::Info("Hello, Virtus!");
 
+    struct nk_glfw glfw {};
+    struct nk_context* ctx = nk_glfw3_init(&glfw, window.m_NativeWindow, NK_GLFW3_INSTALL_CALLBACKS);
+    {
+        struct nk_font_atlas* atlas;
+        nk_glfw3_font_stash_begin(&glfw, &atlas);
+        struct nk_font* proggy_clean = nk_font_atlas_add_default(atlas, 14, nullptr);
+        nk_glfw3_font_stash_end(&glfw);
+        nk_style_set_font(ctx, &proggy_clean->handle);
+    }
+
     while(!window.Poll()) {
+
+        nk_glfw3_new_frame(&glfw);
 
         glm::vec2 cursor(window.GetCursor());
 
@@ -61,8 +74,12 @@ int main(int argc, char** argv) {
 
         last_cursor = cursor;
 
-        camera.m_Rotation.x += glm::radians(cursor_delta.x);
-        camera.m_Rotation.y += glm::radians(cursor_delta.y);
+        if(captured) {
+
+            camera.m_Rotation.x += glm::radians(cursor_delta.x);
+            camera.m_Rotation.y += glm::radians(cursor_delta.y);
+
+        }
 
         float movement_forward(0.0f);
         float movement_right(0.0f);
@@ -70,6 +87,13 @@ int main(int argc, char** argv) {
         if(window.GetKey(GLFW_KEY_S)) movement_right = 0.1f;
         if(window.GetKey(GLFW_KEY_D)) movement_forward = 0.1f;
         if(window.GetKey(GLFW_KEY_A)) movement_forward = -0.1f;
+
+        if(window.GetKey(GLFW_KEY_ESCAPE)) {
+
+            captured = !captured;
+            window.SetCursorCapture(captured);
+
+        }
 
         glm::vec3 up(0.0f, 1.0f, 0.0f);
         glm::vec3 forward(glm::cos(camera.m_Rotation.x), 0.0f, glm::sin(camera.m_Rotation.x));
@@ -114,6 +138,27 @@ int main(int argc, char** argv) {
 
         map.Draw(graphics, shader);
 
+        if(nk_begin(ctx, "Test", nk_rect(50, 50, 220, 220), NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_CLOSABLE)) {
+
+            nk_layout_row_static(ctx, 30, 80, 1);
+            
+            if(nk_button_label(ctx, "button")) {
+
+                Virtus::Info("Oi!");
+
+            }
+
+        }
+        nk_end(ctx);
+
+        nk_glfw3_render(&glfw, NK_ANTI_ALIASING_ON, 512 * 1024, 128 * 1024); // Values from the demo backend `main.c`
+
+        glDisable(GL_BLEND);
+        glEnable(GL_CULL_FACE);
+        glEnable(GL_DEPTH_TEST);
+        glDisable(GL_SCISSOR_TEST);
+
     }
+    nk_glfw3_shutdown(&glfw);
 
 }
