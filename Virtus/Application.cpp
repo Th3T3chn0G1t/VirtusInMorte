@@ -4,7 +4,7 @@
 
 int main(int argc, char** argv) {
 
-    std::string resource_dir = "Resources";
+    std::string resource_dir {"Resources"};
     if(argc > 1) {
 
         resource_dir = std::string(argv[1]);
@@ -15,27 +15,35 @@ int main(int argc, char** argv) {
     //       Especially binding, which may currently involve redundant
     //       Re-binds
 
-    std::string title = "Virtus in Morte";
+    std::string title {"Virtus in Morte"};
     Virtus::Window::Extent extent {640, 480};
     Virtus::Window window(extent, Virtus::Window::Position{0, 0}, title);
     window.SetCursorCapture(true);
     Virtus::Graphics graphics(window);
+    Virtus::UI ui(window);
 
     Virtus::ImageLoader image_loader(resource_dir);
     Virtus::ShaderUnitLoader shader_unit_loader(resource_dir);
     Virtus::MeshLoader mesh_loader(resource_dir);
     Virtus::MaterialLoader material_loader(resource_dir);
+    Virtus::UIStyleLoader ui_style_loader(resource_dir);
 
-    std::string vertex_path = "instanced.vert.glsl";
-    std::string fragment_path = "fragment.frag.glsl";
+    std::string style_path {"default.ui.yaml"};
+    ui.SetStyle(ui_style_loader.Get(style_path));
+
+    std::string vertex_path {"instanced.vert.glsl"};
+    std::string fragment_path {"fragment.frag.glsl"};
     Virtus::Graphics::Shader::Unit& vertex = shader_unit_loader.Get(vertex_path);
     Virtus::Graphics::Shader::Unit& fragment = shader_unit_loader.Get(fragment_path);
     Virtus::Graphics::Shader shader(vertex, fragment);
 
-    std::string image_path = "test.bmp";
+    std::string image_path {"test.bmp"};
     Virtus::Graphics::Texture texture(image_loader.Get(image_path), Virtus::Graphics::Texture::FilterMode::Linear, Virtus::Graphics::Texture::WrapMode::Clamp);
 
     glm::mat4 projection(glm::perspective(glm::radians(75.0f), (float) extent[0] / (float) extent[1], 0.01f, 100.0f));
+
+    std::string map_path {fmt::format("{}/0.map.yaml", resource_dir)}; // TODO: Resource loader on maps
+    Virtus::Map map(map_path, image_loader, shader_unit_loader, mesh_loader, material_loader);
 
     struct Camera {
 
@@ -49,57 +57,47 @@ int main(int argc, char** argv) {
     glm::vec2 last_cursor(0.0f, 0.0f);
     bool captured = true;
 
-    std::string map_path = fmt::format("{}/0.map.yaml", resource_dir);
-    Virtus::Map map(map_path, image_loader, shader_unit_loader, mesh_loader, material_loader);
-
     Virtus::Info("Hello, Virtus!");
 
-    struct nk_glfw glfw {};
-    struct nk_context* ctx = nk_glfw3_init(&glfw, window.m_NativeWindow, NK_GLFW3_INSTALL_CALLBACKS);
-    {
-        struct nk_font_atlas* atlas;
-        nk_glfw3_font_stash_begin(&glfw, &atlas);
-        struct nk_font* proggy_clean = nk_font_atlas_add_default(atlas, 14, nullptr);
-        nk_glfw3_font_stash_end(&glfw);
-        nk_style_set_font(ctx, &proggy_clean->handle);
-    }
+    float health = 0.6f;
+    bool inventory = false;
 
     while(!window.Poll()) {
-
-        nk_glfw3_new_frame(&glfw);
-
+        
         glm::vec2 cursor(window.GetCursor());
 
         glm::vec2 cursor_delta(cursor - last_cursor);
 
         last_cursor = cursor;
 
+        if(window.GetKey(GLFW_KEY_I)) {
+        
+            captured = !captured;
+            inventory = !inventory;
+        
+        }
+
+        window.SetCursorCapture(captured);
+
         if(captured) {
 
             camera.m_Rotation.x += glm::radians(cursor_delta.x);
             camera.m_Rotation.y += glm::radians(cursor_delta.y);
 
+            float movement_forward(0.0f);
+            float movement_right(0.0f);
+            if(window.GetKey(GLFW_KEY_W)) movement_right = -0.1f;
+            if(window.GetKey(GLFW_KEY_S)) movement_right = 0.1f;
+            if(window.GetKey(GLFW_KEY_D)) movement_forward = 0.1f;
+            if(window.GetKey(GLFW_KEY_A)) movement_forward = -0.1f;
+
+            glm::vec3 up(0.0f, 1.0f, 0.0f);
+            glm::vec3 forward(glm::cos(camera.m_Rotation.x), 0.0f, glm::sin(camera.m_Rotation.x));
+            glm::vec3 right(glm::cross(forward, up));
+
+            camera.m_Position += (movement_forward * forward) + (movement_right * right);
+
         }
-
-        float movement_forward(0.0f);
-        float movement_right(0.0f);
-        if(window.GetKey(GLFW_KEY_W)) movement_right = -0.1f;
-        if(window.GetKey(GLFW_KEY_S)) movement_right = 0.1f;
-        if(window.GetKey(GLFW_KEY_D)) movement_forward = 0.1f;
-        if(window.GetKey(GLFW_KEY_A)) movement_forward = -0.1f;
-
-        if(window.GetKey(GLFW_KEY_ESCAPE)) {
-
-            captured = !captured;
-            window.SetCursorCapture(captured);
-
-        }
-
-        glm::vec3 up(0.0f, 1.0f, 0.0f);
-        glm::vec3 forward(glm::cos(camera.m_Rotation.x), 0.0f, glm::sin(camera.m_Rotation.x));
-        glm::vec3 right(glm::cross(forward, up));
-
-        camera.m_Position += (movement_forward * forward) + (movement_right * right);
 
         glm::mat4 view(glm::mat4(1.0f));
         view = glm::rotate(view, camera.m_Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -138,27 +136,32 @@ int main(int argc, char** argv) {
 
         map.Draw(graphics, shader);
 
-        if(nk_begin(ctx, "Test", nk_rect(50, 50, 220, 220), NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_CLOSABLE)) {
+        ui.Begin();
 
-            nk_layout_row_static(ctx, 30, 80, 1);
-            
-            if(nk_button_label(ctx, "button")) {
+        // TODO: Push/Pop style attributes
+        ((nk_context*) ui)->style.window.fixed_background = nk_style_item_color(nk_rgba(0, 0, 0, 0));
+        ((nk_context*) ui)->style.window.background = nk_rgba(0, 0, 0, 0);
 
-                Virtus::Info("Oi!");
+        if(nk_begin(ui, "HealthBar", nk_rect(0, 0, 640, 480), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_NO_INPUT)) {
 
-            }
+            nk_layout_row_static(ui, 10, 640, 1);
+            Virtus::usz health_scaled = 640 * health;
+            nk_progress(ui, &health_scaled, 640, NK_FIXED);
 
+            nk_end(ui);
         }
-        nk_end(ctx);
 
-        nk_glfw3_render(&glfw, NK_ANTI_ALIASING_ON, 512 * 1024, 128 * 1024); // Values from the demo backend `main.c`
+        ui.SetStyle(ui.m_Style);
 
-        glDisable(GL_BLEND);
-        glEnable(GL_CULL_FACE);
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_SCISSOR_TEST);
+        if(inventory && nk_begin(ui, "Inventory", nk_rect(64, 64, 512, 352), NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_BACKGROUND)) {
+
+
+
+            nk_end(ui);
+        }
+
+        ui.End();
 
     }
-    nk_glfw3_shutdown(&glfw);
 
 }

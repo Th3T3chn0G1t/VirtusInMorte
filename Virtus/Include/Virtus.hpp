@@ -48,15 +48,15 @@ namespace Virtus {
     void Info(std::string);
     void Debug(std::string);
 
+    class UI;
+
     class Window {
 
     public:
         using Extent = uint[2];
         using Position = int[2];
 
-    // private:
-    // TODO: Add as friend to UI class
-    public:
+    private:
         GLFWwindow* m_NativeWindow;
 
     public:
@@ -68,6 +68,55 @@ namespace Virtus {
         void SetCursorCapture(bool);
         glm::vec2 GetCursor();
         bool GetKey(int);
+
+        friend class UI;
+
+    };
+
+    class UI {
+
+    public:
+        class Style {
+
+        public:
+            glm::uvec4 m_Border;
+            glm::uvec4 m_Background;
+            glm::uvec4 m_Content;
+            glm::uvec4 m_Inactive;
+            glm::uvec4 m_Element;
+            glm::uvec4 m_Active;
+
+        public:
+            Style() = default;
+
+            Style(glm::vec4 border, glm::vec4 background, glm::vec4 content, glm::vec4 inactive, glm::vec4 element, glm::vec4 active) :
+                m_Border(border),
+                m_Background(background),
+                m_Content(content),
+                m_Inactive(inactive),
+                m_Element(element),
+                m_Active(active) {}
+
+            Style(std::string&);
+
+        };
+
+    private:
+        nk_glfw m_NuklearGLFW;
+        nk_context* m_Context;
+
+    public:
+        Style m_Style;
+
+    public:
+        UI(Window&);
+        ~UI();
+
+        void Begin();
+        void End();
+        void SetStyle(Style&);
+
+        operator nk_context*();
 
     };
 
@@ -336,20 +385,7 @@ namespace Virtus {
             glm::mat3 m_Normal;
 
         public:
-            Transform(glm::vec3 position = {0.0f, 0.0f, 0.0f}, glm::vec3 rotation = {0.0f, 0.0f, 0.0f}, glm::vec3 scale = {1.0f, 1.0f, 1.0f}) {
-
-                glm::mat4 transform(1.0f);
-
-                transform = glm::translate(transform, position);
-                transform = glm::rotate(transform, rotation.x, {1.0f, 0.0f, 0.0f});
-                transform = glm::rotate(transform, rotation.y, {0.0f, 1.0f, 0.0f});
-                transform = glm::rotate(transform, rotation.z, {0.0f, 0.0f, 1.0f});
-                transform = glm::scale(transform, scale);
-
-                m_Transform = transform;
-                m_Normal = glm::mat3(glm::transpose(glm::inverse(transform)));
-
-            }
+            Transform(glm::vec3 position = {0.0f, 0.0f, 0.0f}, glm::vec3 rotation = {0.0f, 0.0f, 0.0f}, glm::vec3 scale = {1.0f, 1.0f, 1.0f});
 
         };
 
@@ -497,7 +533,7 @@ namespace Virtus {
 
                 if(added) {
 
-                    std::string rdir_path = fmt::format("{}/{}", m_ResourceDirectory, path);
+                    std::string rdir_path {fmt::format("{}/{}", m_ResourceDirectory, path)};
                     Debug(fmt::format("Loading resource at `{}`", rdir_path));
 
                     m_Resources[m_ResourcesLast] = std::move(T(rdir_path));
@@ -515,6 +551,8 @@ namespace Virtus {
     using ShaderUnitLoader = ResourceLoader<Graphics::Shader::Unit, 1024>;
     using MeshLoader = ResourceLoader<Graphics::Mesh, 1024>;
     using MaterialLoader = ResourceLoader<Graphics::Material, 1024>;
+
+    using UIStyleLoader = ResourceLoader<UI::Style, 128>;
 
     class Map {
 
