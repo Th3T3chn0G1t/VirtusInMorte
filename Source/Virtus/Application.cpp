@@ -57,10 +57,11 @@ int main(int argc, char** argv) {
     glm::vec2 last_cursor(0.0f, 0.0f);
     bool captured = true;
 
-    Virtus::Info("Hello, Virtus!");
+    Common::Info("Hello, Virtus!");
 
     float health = 0.6f;
     bool inventory = false;
+    bool i_held = false;
 
     while(!window.Poll()) {
         
@@ -70,14 +71,22 @@ int main(int argc, char** argv) {
 
         last_cursor = cursor;
 
-        if(window.GetKey(GLFW_KEY_I)) {
+        bool i_state = window.GetKey(GLFW_KEY_I);
+        if(!i_held && i_state) {
         
             captured = !captured;
             inventory = !inventory;
-        
-        }
 
-        window.SetCursorCapture(captured);
+            window.SetCursorCapture(captured);
+
+            i_held = true;
+
+        }
+        else if(!i_state) {
+
+            i_held = false;
+
+        }
 
         if(captured) {
 
@@ -138,24 +147,20 @@ int main(int argc, char** argv) {
 
         ui.Begin();
 
-        // TODO: Push/Pop style attributes
-        ((nk_context*) ui)->style.window.fixed_background = nk_style_item_color(nk_rgba(0, 0, 0, 0));
-        ((nk_context*) ui)->style.window.background = nk_rgba(0, 0, 0, 0);
+        ui.SetBackground(false);
 
         if(nk_begin(ui, "HealthBar", nk_rect(0, 0, 640, 480), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_NO_INPUT)) {
 
             nk_layout_row_static(ui, 10, 640, 1);
-            Virtus::usz health_scaled = static_cast<Virtus::usz>(640 * health);
+            Common::usz health_scaled = static_cast<Common::usz>(640 * health);
             nk_progress(ui, &health_scaled, 640, NK_FIXED);
 
             nk_end(ui);
         }
 
-        ui.SetStyle(ui.m_Style);
+        ui.SetBackground(true);
 
         if(inventory && nk_begin(ui, "Inventory", nk_rect(64, 64, 512, 352), NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_BACKGROUND)) {
-
-
 
             nk_end(ui);
         }

@@ -2,7 +2,7 @@
 #include <Virtus.hpp>
 #endif
 
-namespace Virtus {
+namespace Common {
 
     void Fatal(std::string message) {
 

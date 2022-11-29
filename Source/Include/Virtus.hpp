@@ -1,32 +1,13 @@
 #pragma once
 
-#include <string>
-#include <iostream>
-#include <vector>
-#include <array>
-#include <unordered_map>
-#include <memory>
-#include <functional>
-#include <filesystem>
-#include <exception>
-#include <fstream>
-#include <cstdlib>
-#include <cstring>
+#include <Common.hpp>
 
-#include <asio.hpp>
-using asio::ip::tcp;
 #include <stb_image.h>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
-#include <fmt/format.h>
-#include <fmt/color.h>
-#include <glm/glm.hpp>
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/ext/matrix_clip_space.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include <yaml-cpp/yaml.h>
 #include <nuklear.h>
 extern "C" {
     #include <nuklear_glfw_gl3.h>
@@ -34,21 +15,7 @@ extern "C" {
 
 namespace Virtus {
 
-    using uchar = unsigned char;
-    using ushort = unsigned char;
-    using uint = unsigned int;
-#ifdef __INTELLISENSE
-    using half = float;
-#else
-    using half = __fp16;
-#endif
-    using uptr = std::uintptr_t;
-    using usz = std::size_t;
-
-    void Fatal(std::string);
-    void Error(std::string);
-    void Info(std::string);
-    void Debug(std::string);
+    using namespace Common;
 
     class UI;
 
@@ -117,6 +84,7 @@ namespace Virtus {
         void Begin();
         void End();
         void SetStyle(Style&);
+        void SetBackground(bool);
 
         operator nk_context*();
 
@@ -269,7 +237,7 @@ namespace Virtus {
 
                 if(added) it->second = glGetUniformLocation(m_Handle.get(), name.c_str());
 
-                     if constexpr (std::is_same<T, float    >::value) glUniform1f(it->second, value);
+                if constexpr (std::is_same<T, float    >::value) glUniform1f(it->second, value);
                 else if constexpr (std::is_same<T, glm::vec2>::value) glUniform2f(it->second, value.x, value.y);
                 else if constexpr (std::is_same<T, glm::vec3>::value) glUniform3f(it->second, value.x, value.y, value.z);
                 else if constexpr (std::is_same<T, glm::vec4>::value) glUniform4f(it->second, value.x, value.y, value.z, value.w);
@@ -512,40 +480,6 @@ namespace Virtus {
         void UpdateSurface(Window::Extent);
         void Draw(uint, uint, DrawMode);
         void Clear(glm::vec3);
-
-    };
-
-    template<class T, usz ResourcePoolSize>
-    class ResourceLoader {
-
-        private:
-            std::string m_ResourceDirectory;
-            std::array<T, ResourcePoolSize> m_Resources;
-            usz m_ResourcesLast{0};
-            std::unordered_map<std::string, usz> m_Map;
-
-        public:
-            ResourceLoader(std::string resource_directory) : m_ResourceDirectory(resource_directory) {}
-
-            T& Get(std::string& path) {
-
-                auto empl = m_Map.try_emplace(path, ResourcePoolSize);
-                auto it = empl.first;
-                auto added = empl.second;
-
-                if(added) {
-
-                    std::string rdir_path {fmt::format("{}/{}", m_ResourceDirectory, path)};
-                    Debug(fmt::format("Loading resource at `{}`", rdir_path));
-
-                    m_Resources[m_ResourcesLast] = std::move(T(rdir_path));
-                    it->second = m_ResourcesLast++;
-
-                }
-
-                return m_Resources[it->second];
-
-            }
 
     };
 

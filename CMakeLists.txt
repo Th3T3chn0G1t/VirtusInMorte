@@ -8,8 +8,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 # GLAD
-    set(GLAD Virtus/Vendor/glad/src/gl.c)
-    include_directories(Virtus/Vendor/glad/include)
+    set(GLAD Source/Vendor/glad/src/gl.c)
+    include_directories(Source/Vendor/glad/include)
 #
 
 # GLFW
@@ -35,7 +35,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 #
 
 # Nuklear
-    include_directories(Virtus/Vendor/nuklear)
+    include_directories(Source/Vendor/nuklear)
     add_compile_definitions(
             NK_INCLUDE_FIXED_TYPES
             NK_INCLUDE_DEFAULT_ALLOCATOR
@@ -52,8 +52,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 # ASIO
 #
 
-file(GLOB Virtus Virtus/*.cpp Virtus/*.c Virtus/Include/*.hpp)
-set_property(SOURCE Virtus/SingleHeaderImplementation.c PROPERTY SKIP_PRECOMPILE_HEADERS)
-include_directories(Virtus/Include)
-add_executable(Virtus ${Virtus} ${GLAD})
-target_precompile_headers(Virtus PUBLIC "$<$<COMPILE_LANGUAGE:CXX>:<Virtus.hpp$<ANGLE-R>>")
+# Common
+    file(GLOB Common Source/Common/*.cpp Source/Common/*.c Source/Include/*.hpp)
+    include_directories(Source/Include)
+#
+
+# Virtus
+    file(GLOB Virtus Source/Virtus/*.cpp Source/Virtus/*.c Source/Include/*.hpp)
+    include_directories(Source/Include)
+
+    add_executable(Virtus ${Virtus} ${Common} ${GLAD})
+
+    target_precompile_headers(Virtus PUBLIC "$<$<COMPILE_LANGUAGE:CXX>:<Virtus.hpp$<ANGLE-R>>")
+    set_property(SOURCE Source/Virtus/SingleHeaderImplementation.c PROPERTY SKIP_PRECOMPILE_HEADERS)
+#

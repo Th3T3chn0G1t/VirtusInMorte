@@ -330,6 +330,22 @@ namespace Virtus {
 
     }
 
+    void UI::SetBackground(bool background) {
+
+        if(!background) {
+
+            m_Context->style.window.fixed_background = nk_style_item_color(nk_rgba(0, 0, 0, 0));
+            m_Context->style.window.background = nk_rgba(0, 0, 0, 0);
+
+        }
+        else {
+
+            SetStyle(m_Style);
+
+        }
+
+    }
+
     UI::UI(Window& window) {
 
         // TODO: Switch to `NK_GLFW3_DEFAULT` and deliver events ourselves

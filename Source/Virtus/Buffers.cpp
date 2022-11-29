@@ -76,7 +76,7 @@ namespace Virtus {
                 case GL_BYTE: type_size = sizeof(char); break;
                 case GL_UNSIGNED_BYTE: type_size = sizeof(uchar); break;
                 case GL_SHORT: type_size = sizeof(short); break;
-                case GL_UNSIGNED_SHORT: type_size = sizeof(ushort); break;
+                case GL_UNSIGNED_SHORT: type_size = sizeof(Common::ushort); break;
                 case GL_INT: type_size = sizeof(int); break;
                 case GL_UNSIGNED_INT: type_size = sizeof(uint); break;
                 case GL_HALF_FLOAT: type_size = sizeof(half); break;

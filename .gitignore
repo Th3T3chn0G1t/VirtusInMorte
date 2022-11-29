@@ -1,4 +1,9 @@
 build/
+cmake*/
+*.dSYM/
 .vscode/
+.idea/
+
 .DS_Store
 *.rdc
+*.out
