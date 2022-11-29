@@ -49,6 +49,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
     )
 #
 
+# ASIO
+#
+
 file(GLOB Virtus Virtus/*.cpp Virtus/*.c Virtus/Include/*.hpp)
 set_property(SOURCE Virtus/SingleHeaderImplementation.c PROPERTY SKIP_PRECOMPILE_HEADERS)
 include_directories(Virtus/Include)

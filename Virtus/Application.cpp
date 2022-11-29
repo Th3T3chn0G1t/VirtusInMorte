@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
         if(nk_begin(ui, "HealthBar", nk_rect(0, 0, 640, 480), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_NO_INPUT)) {
 
             nk_layout_row_static(ui, 10, 640, 1);
-            Virtus::usz health_scaled = 640 * health;
+            Virtus::usz health_scaled = static_cast<Virtus::usz>(640 * health);
             nk_progress(ui, &health_scaled, 640, NK_FIXED);
 
             nk_end(ui);

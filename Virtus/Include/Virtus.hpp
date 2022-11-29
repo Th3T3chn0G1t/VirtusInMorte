@@ -13,6 +13,8 @@
 #include <cstdlib>
 #include <cstring>
 
+#include <asio.hpp>
+using asio::ip::tcp;
 #include <stb_image.h>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
