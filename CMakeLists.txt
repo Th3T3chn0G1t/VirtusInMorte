@@ -26,6 +26,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 #
 
 # Assimp
+    set(ASSIMP_WARNINGS_AS_ERRORS OFF)
     set(ASSIMP_INSTALL OFF)
     add_subdirectory(Source/Vendor/assimp)
     link_libraries(assimp)
