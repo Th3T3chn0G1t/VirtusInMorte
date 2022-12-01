@@ -1,3 +1,27 @@
 [submodule "Virtus/Vendor/GLFW"]
 	path = Virtus/Vendor/GLFW
 	url = https://github.com/glfw/glfw
+[submodule "Source/Vendor/GLFW"]
+	path = Source/Vendor/GLFW
+	url = https://github.com/glfw/glfw
+[submodule "Source/Vendor/glm"]
+	path = Source/Vendor/glm
+	url = https://github.com/g-truc/glm
+[submodule "Source/Vendor/fmt"]
+	path = Source/Vendor/fmt
+	url = https://github.com/fmtlib/fmt
+[submodule "Source/Vendor/stb"]
+	path = Source/Vendor/stb
+	url = https://github.com/nothings/stb
+[submodule "Source/Vendor/yaml-cpp"]
+	path = Source/Vendor/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp
+[submodule "Source/Vendor/Nuklear"]
+	path = Source/Vendor/Nuklear
+	url = https://github.com/Immediate-Mode-UI/Nuklear
+[submodule "Source/Vendor/asio"]
+	path = Source/Vendor/asio
+	url = https://github.com/chriskohlhoff/asio
+[submodule "Source/Vendor/assimp"]
+	path = Source/Vendor/assimp
+	url = https://github.com/assimp/assimp

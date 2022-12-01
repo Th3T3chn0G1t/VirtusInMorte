@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.23)
 
+cmake_policy(SET CMP0126 NEW)
+cmake_policy(SET CMP0077 NEW)
+cmake_policy(SET CMP0102 NEW)
+
 project(Virtus)
 
 set(EXPORT_COMPILE_COMMANDS true)
@@ -13,29 +17,38 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 #
 
 # GLFW
+    add_subdirectory(Source/Vendor/GLFW)
 	link_libraries(glfw)
 #
 
+# STB
+    include_directories(Source/Vendor/stb)
+#
+
+# Assimp
+    set(ASSIMP_INSTALL OFF)
+    add_subdirectory(Source/Vendor/assimp)
+    link_libraries(assimp)
+#
+
 # FMT
+    add_subdirectory(Source/Vendor/fmt)
     link_libraries(fmt)
 #
 
 # GLM
-#
-
-# STB
-#
-
-# Assimp
-    link_libraries(assimp)
+    add_subdirectory(Source/Vendor/glm)
+    link_libraries(glm)
 #
 
 # Yaml-cpp
+    add_subdirectory(Source/Vendor/yaml-cpp)
     link_libraries(yaml-cpp)
 #
 
 # Nuklear
-    include_directories(Source/Vendor/nuklear)
+    include_directories(Source/Vendor/Nuklear)
+    include_directories(Source/Vendor/Nuklear/demo/glfw_opengl3)
     add_compile_definitions(
             NK_INCLUDE_FIXED_TYPES
             NK_INCLUDE_DEFAULT_ALLOCATOR
@@ -50,15 +63,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 #
 
 # ASIO
+    include_directories(Source/Vendor/asio/asio/include)
 #
 
 # Common
-    file(GLOB Common Source/Common/*.cpp Source/Common/*.c Source/Include/*.hpp)
+    file(GLOB Common Source/Common/*.cpp Source/Include/*.hpp)
     include_directories(Source/Include)
 #
 
 # Virtus
-    file(GLOB Virtus Source/Virtus/*.cpp Source/Virtus/*.c Source/Include/*.hpp)
+    file(GLOB Virtus Source/Virtus/*.cpp Source/Include/*.hpp Source/Virtus/SingleHeaderImplementation.c)
     include_directories(Source/Include)
 
     add_executable(Virtus ${Virtus} ${Common} ${GLAD})
