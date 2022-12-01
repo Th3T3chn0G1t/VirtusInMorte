@@ -1,6 +1,6 @@
 namespace Virtus {
 
-    UI::Style::Style(std::string& path) {
+    UI::Style::Style(std::string& path, ResourceLoaderBundle& bundle) {
 
         if(!std::filesystem::exists(path)) Fatal(fmt::format("No such file {}", path));
 

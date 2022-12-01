@@ -24,24 +24,26 @@ int main(int argc, char** argv) {
     Virtus::ShaderUnitLoader shader_unit_loader(resource_dir);
     Virtus::MeshLoader mesh_loader(resource_dir);
     Virtus::MaterialLoader material_loader(resource_dir);
+    Virtus::MapLoader map_loader(resource_dir);
+    Virtus::ResourceLoaderBundle loader_bundle{image_loader, shader_unit_loader, mesh_loader, material_loader, map_loader};
     Virtus::UIStyleLoader ui_style_loader(resource_dir);
 
     std::string style_path {"default.ui.yaml"};
-    ui.SetStyle(ui_style_loader.Get(style_path));
+    ui.SetStyle(ui_style_loader.Get(style_path, loader_bundle));
 
     std::string vertex_path {"instanced.vert.glsl"};
     std::string fragment_path {"fragment.frag.glsl"};
-    Virtus::Graphics::Shader::Unit& vertex = shader_unit_loader.Get(vertex_path);
-    Virtus::Graphics::Shader::Unit& fragment = shader_unit_loader.Get(fragment_path);
+    Virtus::Graphics::Shader::Unit& vertex = shader_unit_loader.Get(vertex_path, loader_bundle);
+    Virtus::Graphics::Shader::Unit& fragment = shader_unit_loader.Get(fragment_path, loader_bundle);
     Virtus::Graphics::Shader shader(vertex, fragment);
 
     std::string image_path {"test.bmp"};
-    Virtus::Graphics::Texture texture(image_loader.Get(image_path), Virtus::Graphics::Texture::FilterMode::Linear, Virtus::Graphics::Texture::WrapMode::Clamp);
+    Virtus::Graphics::Texture texture(image_loader.Get(image_path, loader_bundle), Virtus::Graphics::Texture::FilterMode::Linear, Virtus::Graphics::Texture::WrapMode::Clamp);
 
     glm::mat4 projection(glm::perspective(glm::radians(75.0f), (float) extent[0] / (float) extent[1], 0.01f, 100.0f));
 
-    std::string map_path {fmt::format("{}/0.map.yaml", resource_dir)}; // TODO: Resource loader on maps
-    Virtus::Map map(map_path, image_loader, shader_unit_loader, mesh_loader, material_loader);
+    std::string map_path {"0.map.yaml"}; // TODO: Resource loader on maps
+    Virtus::Map& map(map_loader.Get(map_path, loader_bundle));
 
     struct Camera {
 

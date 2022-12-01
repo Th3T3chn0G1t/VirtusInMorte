@@ -53,7 +53,8 @@ namespace Common {
     public:
         ResourceLoader(const std::string& resource_directory) : m_ResourceDirectory(resource_directory) {}
 
-        T& Get(const std::string& path) {
+        template<class B>
+        T& Get(const std::string& path, B& bundle) {
 
             auto empl = m_Map.try_emplace(path, ResourcePoolSize);
             auto it = empl.first;
@@ -64,7 +65,7 @@ namespace Common {
                 std::string rdir_path {fmt::format("{}/{}", m_ResourceDirectory, path)};
                 Debug(fmt::format("Loading resource at `{}`", rdir_path));
 
-                m_Resources[m_ResourcesLast] = std::move(T(rdir_path));
+                m_Resources[m_ResourcesLast] = std::move(T(rdir_path, bundle));
                 it->second = m_ResourcesLast++;
 
             }

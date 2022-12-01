@@ -7,7 +7,7 @@ namespace Virtus {
 
     }
 
-    Graphics::Mesh::Mesh(const std::string& path) {
+    Graphics::Mesh::Mesh(const std::string& path, ResourceLoaderBundle& bundle) {
 
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(path,

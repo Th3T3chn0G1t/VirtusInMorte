@@ -9,7 +9,7 @@ namespace Virtus {
 
     };
 
-    Graphics::Material::Material(const std::string& path) {
+    Graphics::Material::Material(const std::string& path, ResourceLoaderBundle& bundle) {
 
         if(!std::filesystem::exists(path)) Fatal(fmt::format("No such file {}", path));
 

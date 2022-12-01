@@ -17,6 +17,8 @@ namespace Virtus {
 
     using namespace Common;
 
+    class ResourceLoaderBundle;
+
     class UI;
 
     class Window {
@@ -66,7 +68,7 @@ namespace Virtus {
                 m_Element(element),
                 m_Active(active) {}
 
-            explicit Style(std::string&);
+            explicit Style(std::string&, ResourceLoaderBundle&);
 
         };
 
@@ -117,7 +119,7 @@ namespace Virtus {
 
             public:
                 Image() = default;
-                explicit Image(std::string&);
+                explicit Image(const std::string&, ResourceLoaderBundle&);
 
                 friend class Texture;
 
@@ -213,7 +215,7 @@ namespace Virtus {
 
             public:
                 Unit() = default;
-                explicit Unit(const std::string&);
+                explicit Unit(const std::string&, ResourceLoaderBundle&);
 
                 friend class Shader;
     
@@ -369,10 +371,12 @@ namespace Virtus {
             float m_Shininess;
             uint m_DoSample;
 
+//            std::reference_wrapper<Texture> m_Texture;
+
         public:
             Material() = default;
             Material(const uint specular_strength, const float shininess, const uint do_sample) : m_SpecularStrength(specular_strength), m_Shininess(shininess), m_DoSample(do_sample) {}
-            explicit Material(const std::string&);
+            explicit Material(const std::string&, ResourceLoaderBundle&);
 
         };
 
@@ -466,7 +470,7 @@ namespace Virtus {
 
         public:
             Mesh() = default;
-            explicit Mesh(const std::string&);
+            explicit Mesh(const std::string&, ResourceLoaderBundle&);
 
         };
 
@@ -482,13 +486,6 @@ namespace Virtus {
 
     };
 
-    using ImageLoader = ResourceLoader<Graphics::Image, 1024>;
-    using ShaderUnitLoader = ResourceLoader<Graphics::Shader::Unit, 1024>;
-    using MeshLoader = ResourceLoader<Graphics::Mesh, 1024>;
-    using MaterialLoader = ResourceLoader<Graphics::Material, 1024>;
-
-    using UIStyleLoader = ResourceLoader<UI::Style, 128>;
-
     class Map {
 
     public:
@@ -497,10 +494,31 @@ namespace Virtus {
         std::vector<glm::vec3> m_PointLightColors;
 
     public:
-        Map(const std::string&, ImageLoader&, ShaderUnitLoader&, MeshLoader&, MaterialLoader&);
+        Map() = default;
+        Map(const std::string&, ResourceLoaderBundle&);
 
         void Draw(const Graphics&, Graphics::Shader&);
 
     };
+
+
+    using ImageLoader = ResourceLoader<Graphics::Image, 1024>;
+    using ShaderUnitLoader = ResourceLoader<Graphics::Shader::Unit, 1024>;
+    using MeshLoader = ResourceLoader<Graphics::Mesh, 1024>;
+    using MaterialLoader = ResourceLoader<Graphics::Material, 1024>;
+    using MapLoader = ResourceLoader<Map, 1024>;
+
+    class ResourceLoaderBundle {
+
+    public:
+        std::reference_wrapper<ImageLoader> m_ImageLoader;
+        std::reference_wrapper<ShaderUnitLoader> m_ShaderUnitLoader;
+        std::reference_wrapper<MeshLoader> m_MeshLoader;
+        std::reference_wrapper<MaterialLoader> m_MaterialLoader;
+        std::reference_wrapper<MapLoader> m_MapLoader;
+
+    };
+
+    using UIStyleLoader = ResourceLoader<UI::Style, 128>;
 
 }

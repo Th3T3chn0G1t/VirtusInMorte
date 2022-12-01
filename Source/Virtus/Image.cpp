@@ -15,7 +15,7 @@ namespace Virtus {
 
     }
 
-    Graphics::Image::Image(std::string& path) {
+    Graphics::Image::Image(const std::string& path, ResourceLoaderBundle& bundle) {
 
         if(!std::filesystem::exists(path)) Fatal(fmt::format("No such file {}", path));
 

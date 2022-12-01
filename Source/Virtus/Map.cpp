@@ -1,6 +1,6 @@
 namespace Virtus {
 
-    Map::Map(const std::string& path, ImageLoader& image_loader, ShaderUnitLoader& shader_unit_loader, MeshLoader& mesh_loader, MaterialLoader& material_loader) {
+    Map::Map(const std::string& path, ResourceLoaderBundle& bundle) {
 
         if(!std::filesystem::exists(path)) Fatal(fmt::format("No such file {}", path));
 
@@ -9,7 +9,7 @@ namespace Virtus {
         for(const auto& element : map["geometry"]) {
 
             auto mesh_path = element["path"].as<std::string>();
-            m_Geometry.push_back(&mesh_loader.Get(mesh_path));
+            m_Geometry.push_back(&bundle.m_MeshLoader.get().Get(mesh_path, bundle));
 
             glm::vec3 position(
                         element["transform"][0][0].as<float>(),
@@ -37,7 +37,7 @@ namespace Virtus {
                 auto material_path = element["material"].as<std::string>();
                 std::vector<Graphics::Material> material {
                     
-                    material_loader.Get(material_path)
+                    bundle.m_MaterialLoader.get().Get(material_path, bundle)
 
                 };
                 submesh.m_VAO.CreateVBO(instance, Graphics::BufferUsage::StaticDraw, Graphics::Transform::Layout);

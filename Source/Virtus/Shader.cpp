@@ -11,7 +11,7 @@ namespace Virtus {
 
     }
 
-    Graphics::Shader::Unit::Unit(const std::string& path) {
+    Graphics::Shader::Unit::Unit(const std::string& path, ResourceLoaderBundle& bundle) {
 
         std::string source;
         if(std::ifstream stream {path, std::ios::binary | std::ios::ate}) {
