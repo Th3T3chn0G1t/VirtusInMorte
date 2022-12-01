@@ -1,14 +1,8 @@
-#ifdef __INTELLISENSE
-#include <Virtus.hpp>
-#endif
-
 namespace Virtus {
 
     UI::Style::Style(std::string& path) {
 
-#ifndef __INTELLISENSE
         if(!std::filesystem::exists(path)) Fatal(fmt::format("No such file {}", path));
-#endif
 
         YAML::Node map = YAML::LoadFile(path);
         

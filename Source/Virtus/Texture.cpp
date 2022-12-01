@@ -1,7 +1,3 @@
-#ifdef __INTELLISENSE
-#include <Virtus.hpp>
-#endif
-
 namespace Virtus {
     
     static uint FilterModeToGL(Graphics::Texture::FilterMode mode) {
@@ -26,7 +22,7 @@ namespace Virtus {
 
     }
     
-    Graphics::Texture::Texture(Image& image, Graphics::Texture::FilterMode filter, Graphics::Texture::WrapMode wrap) {
+    Graphics::Texture::Texture(const Image& image, Graphics::Texture::FilterMode filter, Graphics::Texture::WrapMode wrap) {
 
         uint handle = 0;
         glGenTextures(1, &handle);
@@ -46,14 +42,14 @@ namespace Virtus {
 
     }
 
-    void Graphics::Texture::Bind(uint slot) {
+    void Graphics::Texture::Bind(const uint slot) const {
 
         glActiveTexture(GL_TEXTURE0 + slot);
         glBindTexture(GL_TEXTURE_2D, m_Handle.get());
 
     }
 
-    void Graphics::Texture::Bind() {
+    void Graphics::Texture::Bind() const {
 
         Bind(0);
 

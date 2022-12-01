@@ -1,10 +1,6 @@
-#ifdef __INTELLISENSE
-#include <Virtus.hpp>
-#endif
-
 namespace Virtus {
 
-    uint Graphics::Image::GetGLFormat() {
+    uint Graphics::Image::GetGLFormat() const {
 
         switch(m_Format) {
 
@@ -21,9 +17,8 @@ namespace Virtus {
 
     Graphics::Image::Image(std::string& path) {
 
-#ifndef __INTELLISENSE
         if(!std::filesystem::exists(path)) Fatal(fmt::format("No such file {}", path));
-#endif
+
         int width = 0;
         int height = 0;
         int channels = 0;

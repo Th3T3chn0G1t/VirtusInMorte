@@ -29,14 +29,14 @@ namespace Virtus {
         GLFWwindow* m_NativeWindow;
 
     public:
-        Window(Extent, Position, std::string&);
+        Window(Extent, Position, const std::string&);
         ~Window();
 
         void MakeActiveSurface();
         bool Poll();
         void SetCursorCapture(bool);
-        glm::vec2 GetCursor();
-        bool GetKey(int);
+        glm::vec2 GetCursor() const;
+        bool GetKey(int) const;
 
         friend class UI;
 
@@ -66,7 +66,7 @@ namespace Virtus {
                 m_Element(element),
                 m_Active(active) {}
 
-            Style(std::string&);
+            explicit Style(std::string&);
 
         };
 
@@ -78,7 +78,7 @@ namespace Virtus {
         Style m_Style;
 
     public:
-        UI(Window&);
+        explicit UI(Window&);
         ~UI();
 
         void Begin();
@@ -113,11 +113,11 @@ namespace Virtus {
                 std::vector<uchar> m_Data;
 
             private:
-                uint GetGLFormat();
+                uint GetGLFormat() const;
 
             public:
                 Image() = default;
-                Image(std::string&);
+                explicit Image(std::string&);
 
                 friend class Texture;
 
@@ -129,25 +129,25 @@ namespace Virtus {
             uint m_UnderlyingHandle{0};
 
         public:
-            GLHandle() {};
-            GLHandle(std::nullptr_t) {};
-            GLHandle(uint handle) : m_UnderlyingHandle(handle) {}
+            GLHandle() = default;
+            GLHandle(const std::nullptr_t) {};
+            GLHandle(const uint handle) : m_UnderlyingHandle(handle) {}
 
-            operator uint() { return m_UnderlyingHandle; }
+            operator uint() const { return m_UnderlyingHandle; }
 
-            explicit operator bool() { return m_UnderlyingHandle != 0; }
-            bool operator!=(std::nullptr_t) { return m_UnderlyingHandle != 0; }
+            explicit operator bool() const { return m_UnderlyingHandle != 0; }
+            bool operator!=(const std::nullptr_t) const { return m_UnderlyingHandle != 0; }
 
         };
 
-        template<void (*func)(uint)>
+        template<void (*func)(const uint)>
         class GLDestructor {
 
         public:
             using pointer = GLHandle;
 
         public:
-            void operator()(GLHandle handle) {
+            void operator()(const GLHandle handle) const {
                 func(handle);
             }
 
@@ -156,7 +156,7 @@ namespace Virtus {
         class Texture {
 
         private:
-            static void Deleter(uint handle) { Debug(fmt::format("Deleting Texture {}", handle)); glDeleteTextures(1, &handle); };
+            static void Deleter(const uint handle) { Debug(fmt::format("Deleting Texture {}", handle)); glDeleteTextures(1, &handle); };
             using Handle = std::unique_ptr<GLHandle, GLDestructor<Deleter>>;        
 
         public:
@@ -178,10 +178,10 @@ namespace Virtus {
             Handle m_Handle;
 
         public:
-            Texture(Image&, FilterMode, WrapMode);
+            Texture(const Image&, const FilterMode, const WrapMode);
 
-            void Bind(uint);
-            void Bind();
+            void Bind(const uint) const;
+            void Bind() const;
 
         };
 
@@ -189,14 +189,14 @@ namespace Virtus {
         class Shader {
 
         private:
-            static void Deleter(uint handle) { Debug(fmt::format("Deleting Shader {}", handle)); glDeleteProgram(handle); };
+            static void Deleter(const uint handle) { Debug(fmt::format("Deleting Shader {}", handle)); glDeleteProgram(handle); };
             using Handle = std::unique_ptr<GLHandle, GLDestructor<Deleter>>;
 
         public:
             class Unit {
 
             private:
-                static void Deleter(uint handle) { Debug(fmt::format("Deleting Shader Unit {}", handle)); glDeleteShader(handle); };
+                static void Deleter(const uint handle) { Debug(fmt::format("Deleting Shader Unit {}", handle)); glDeleteShader(handle); };
                 using Handle = std::unique_ptr<GLHandle, GLDestructor<Deleter>>;
 
             public:
@@ -213,7 +213,7 @@ namespace Virtus {
 
             public:
                 Unit() = default;
-                Unit(std::string&);
+                explicit Unit(const std::string&);
 
                 friend class Shader;
     
@@ -224,16 +224,16 @@ namespace Virtus {
             std::unordered_map<std::string, uint> m_Uniforms;
 
         public:
-            Shader(Graphics::Shader::Unit&, Graphics::Shader::Unit&);
+            Shader(const Graphics::Shader::Unit&, const Graphics::Shader::Unit&);
 
-            void Bind();
+            void Bind() const;
 
             template<class T>
-            void Uniform(std::string& name, T& value) {
+            void Uniform(const std::string& name, const T& value) {
 
-                auto empl = m_Uniforms.try_emplace(name, -1);
-                auto it = empl.first;
-                auto added = empl.second;
+                auto emplaced = m_Uniforms.try_emplace(name, -1);
+                auto it = emplaced.first;
+                auto added = emplaced.second;
 
                 if(added) it->second = glGetUniformLocation(m_Handle.get(), name.c_str());
 
@@ -324,7 +324,7 @@ namespace Virtus {
             uint m_Divisor;
 
         public:
-            VertexAttribute(Type type, uint count, uint divisor) : m_Type(type), m_Count(count), m_Divisor(divisor) {}
+            VertexAttribute(const Type type, const uint count, const uint divisor) : m_Type(type), m_Count(count), m_Divisor(divisor) {}
 
         };
 
@@ -355,7 +355,7 @@ namespace Virtus {
             glm::mat3 m_Normal;
 
         public:
-            Transform(glm::vec3 position = {0.0f, 0.0f, 0.0f}, glm::vec3 rotation = {0.0f, 0.0f, 0.0f}, glm::vec3 scale = {1.0f, 1.0f, 1.0f});
+            explicit Transform(const glm::vec3& position = {0.0f, 0.0f, 0.0f}, const glm::vec3& rotation = {0.0f, 0.0f, 0.0f}, const glm::vec3& scale = {1.0f, 1.0f, 1.0f});
 
         };
 
@@ -371,8 +371,8 @@ namespace Virtus {
 
         public:
             Material() = default;
-            Material(uint specular_strength, float shininess, uint do_sample) : m_SpecularStrength(specular_strength), m_Shininess(shininess), m_DoSample(do_sample) {}
-            Material(std::string&);
+            Material(const uint specular_strength, const float shininess, const uint do_sample) : m_SpecularStrength(specular_strength), m_Shininess(shininess), m_DoSample(do_sample) {}
+            explicit Material(const std::string&);
 
         };
 
@@ -381,17 +381,17 @@ namespace Virtus {
         class VBO {
 
         private:
-            static void Deleter(uint handle) { Debug(fmt::format("Deleting VBO {}", handle)); glDeleteBuffers(1, &handle); };
+            static void Deleter(const uint handle) { Debug(fmt::format("Deleting VBO {}", handle)); glDeleteBuffers(1, &handle); };
             using Handle = std::unique_ptr<GLHandle, GLDestructor<Deleter>>;
 
         private:
             Handle m_Handle;
 
         private:
-            VBO(void* data, uint size, Graphics::BufferUsage usage);
+            VBO(const void* data, uint size, Graphics::BufferUsage usage);
 
         public:
-            void Bind();
+            void Bind() const;
 
             friend class VAO;
 
@@ -411,16 +411,16 @@ namespace Virtus {
             uint m_AttributeIndex{0};
 
         private:
-            void ApplyLayout(BufferLayout&);
-            VBO& CreateVBO(void*, uint, BufferUsage, BufferLayout&);
+            void ApplyLayout(const BufferLayout&);
+            VBO& CreateVBO(const void*, uint, BufferUsage, const BufferLayout&);
 
         public:
             VAO();
 
-            void Bind();
+            void Bind() const;
 
             template<class T>
-            VBO& CreateVBO(std::vector<T> data, Graphics::BufferUsage usage, Graphics::BufferLayout& layout) {
+            VBO& CreateVBO(const std::vector<T> data, const Graphics::BufferUsage usage, const Graphics::BufferLayout& layout) {
 
                 return CreateVBO((void*) data.data(), data.size() * sizeof(T), usage, layout);
 
@@ -431,16 +431,16 @@ namespace Virtus {
         class IBO {
 
         private:
-            static void Deleter(uint handle) { Debug(fmt::format("Deleting IBO {}", handle)); glDeleteBuffers(1, &handle); };
+            static void Deleter(const uint handle) { Debug(fmt::format("Deleting IBO {}", handle)); glDeleteBuffers(1, &handle); };
             using Handle = std::unique_ptr<GLHandle, GLDestructor<Deleter>>;
 
         private:
             Handle m_Handle;
 
         public:
-            IBO(std::vector<uint>&, BufferUsage);
+            IBO(const std::vector<uint>&, BufferUsage);
 
-            void Bind();
+            void Bind() const;
 
         };
 
@@ -457,7 +457,7 @@ namespace Virtus {
                 usz m_VertexCount;
 
             public:
-                void Bind();
+                void Bind() const;
 
             };
 
@@ -466,7 +466,7 @@ namespace Virtus {
 
         public:
             Mesh() = default;
-            Mesh(std::string&);
+            explicit Mesh(const std::string&);
 
         };
 
@@ -474,12 +474,11 @@ namespace Virtus {
         std::vector<std::string> m_SupportedExtensions;
 
     public:
-        Graphics(Window&);
+        explicit Graphics(Window&);
         Graphics() = default;
 
-        void UpdateSurface(Window::Extent);
-        void Draw(uint, uint, DrawMode);
-        void Clear(glm::vec3);
+        void Draw(uint, uint, DrawMode) const;
+        void Clear(const glm::vec3&);
 
     };
 
@@ -498,9 +497,9 @@ namespace Virtus {
         std::vector<glm::vec3> m_PointLightColors;
 
     public:
-        Map(std::string&, ImageLoader&, ShaderUnitLoader&, MeshLoader&, MaterialLoader&);
+        Map(const std::string&, ImageLoader&, ShaderUnitLoader&, MeshLoader&, MaterialLoader&);
 
-        void Draw(Graphics&, Graphics::Shader&);
+        void Draw(const Graphics&, Graphics::Shader&);
 
     };
 

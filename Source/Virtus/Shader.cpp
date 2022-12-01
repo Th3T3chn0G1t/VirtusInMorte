@@ -1,7 +1,3 @@
-#ifdef __INTELLISENSE
-#include <Virtus.hpp>
-#endif
-
 namespace Virtus {
 
     static uint StageToGL(Graphics::Shader::Unit::Stage stage) {
@@ -15,7 +11,7 @@ namespace Virtus {
 
     }
 
-    Graphics::Shader::Unit::Unit(std::string& path) {
+    Graphics::Shader::Unit::Unit(const std::string& path) {
 
         std::string source;
         if(std::ifstream stream {path, std::ios::binary | std::ios::ate}) {
@@ -23,9 +19,7 @@ namespace Virtus {
             auto size(stream.tellg());
             source.resize(size);
             stream.seekg(0);
-#ifndef __INTELLISENSE
             stream.read(source.data(), size);
-#endif
 
         }
         else {
@@ -36,25 +30,23 @@ namespace Virtus {
 
         Graphics::Shader::Unit::Stage stage;
 
-        if(usz found = source.find("#pragma vertex") != std::string::npos) {
+        if(source.find("#pragma vertex") != std::string::npos) {
 
             stage = Graphics::Shader::Unit::Stage::Vertex;
-            // auto it = source.begin() + found;
-            // source.replace(it, it + (sizeof("#pragma vertex") - 1), "");
 
         }
-        else if(usz found = source.find("#pragma fragment") != std::string::npos) {
+        else if(source.find("#pragma fragment") != std::string::npos) {
 
             stage = Graphics::Shader::Unit::Stage::Fragment;
-            // auto it = source.begin() + found;
-            // source.replace(it, it + (sizeof("#pragma fragment") - 1), "");
-            
+
         }
         else {
 
             Fatal(fmt::format("No stage specified in shader unit `{}`", path));
 
         }
+
+        m_Stage = stage;
 
         m_Handle.reset(glCreateShader(StageToGL(stage)));
 
@@ -73,9 +65,7 @@ namespace Virtus {
 
             std::string message;
             message.resize(length + 1);
-#ifndef __INTELLISENSE
             glGetShaderInfoLog(m_Handle.get(), length, nullptr, message.data());
-#endif
 
             Fatal(fmt::format("Failed to compile shader unit:\n{}", message));
 
@@ -83,7 +73,7 @@ namespace Virtus {
 
     }
 
-    Graphics::Shader::Shader(Graphics::Shader::Unit& vertex, Graphics::Shader::Unit& fragment) {
+    Graphics::Shader::Shader(const Graphics::Shader::Unit& vertex, const Graphics::Shader::Unit& fragment) {
 
         m_Handle.reset(glCreateProgram());
 
@@ -102,9 +92,7 @@ namespace Virtus {
 
             std::string message;
             message.resize(length + 1);
-#ifndef __INTELLISENSE
             glGetProgramInfoLog(m_Handle.get(), length, nullptr, message.data());
-#endif
 
             Fatal(fmt::format("Failed to link shader:\n{}", message.data()));
         }
@@ -114,7 +102,7 @@ namespace Virtus {
 
     }
 
-    void Graphics::Shader::Bind() {
+    void Graphics::Shader::Bind() const {
 
         glUseProgram(m_Handle.get());
 

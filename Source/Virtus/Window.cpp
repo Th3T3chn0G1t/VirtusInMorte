@@ -1,7 +1,3 @@
-#ifdef __INTELLISENSE
-#include <Virtus.hpp>
-#endif
-
 namespace Virtus {
 
     static bool glfw_initialized = false;
@@ -12,7 +8,7 @@ namespace Virtus {
 
     }
 
-    Window::Window(Extent extent, Position position, std::string& title) {
+    Window::Window(Extent extent, Position position, const std::string& title) {
 
         if(!glfw_initialized) {
             
@@ -82,7 +78,7 @@ namespace Virtus {
 
     }
 
-    glm::vec2 Window::GetCursor() {
+    glm::vec2 Window::GetCursor() const {
 
         double x = 0.0f;
         double y = 0.0f;
@@ -92,7 +88,7 @@ namespace Virtus {
 
     }
 
-    bool Window::GetKey(int key) {
+    bool Window::GetKey(int key) const {
 
         return glfwGetKey(m_NativeWindow, key);
 

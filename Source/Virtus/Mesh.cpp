@@ -1,17 +1,13 @@
-#ifdef __INTELLISENSE
-#include <Virtus.hpp>
-#endif
-
 namespace Virtus {
 
-    void Graphics::Mesh::Element::Bind() {
+    void Graphics::Mesh::Element::Bind() const {
 
         m_VAO.Bind();
         m_IBO.Bind();
 
     }
 
-    Graphics::Mesh::Mesh(std::string& path) {
+    Graphics::Mesh::Mesh(const std::string& path) {
 
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(path,

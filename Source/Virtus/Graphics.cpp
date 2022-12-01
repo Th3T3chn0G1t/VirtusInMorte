@@ -1,7 +1,3 @@
-#ifdef __INTELLISENSE
-#include <Virtus.hpp>
-#endif
-
 namespace Virtus {
 
     static std::string GLErrorName(uint error) {
@@ -71,7 +67,7 @@ namespace Virtus {
 
     }
 
-    void Graphics::Draw(uint vertices, uint instances, Graphics::DrawMode mode) {
+    void Graphics::Draw(const uint vertices, const uint instances, const Graphics::DrawMode mode) const {
 
         switch(mode) {
 
@@ -82,16 +78,10 @@ namespace Virtus {
 
     }
 
-    void Graphics::Clear(glm::vec3 color) {
+    void Graphics::Clear(const glm::vec3& color) {
 
         glClearColor(color.r, color.g, color.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    }
-
-    void Graphics::UpdateSurface(Window::Extent extent) {
-
-        glViewport(0, 0, extent[0], extent[1]);
 
     }
 

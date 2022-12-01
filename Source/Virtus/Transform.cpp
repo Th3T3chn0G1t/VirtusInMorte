@@ -1,6 +1,5 @@
-#ifdef __INTELLISENSE
-#include <Virtus.hpp>
-#endif
+
+#include "Virtus.hpp"
 
 namespace Virtus {
 
@@ -18,7 +17,7 @@ namespace Virtus {
 
     };
 
-    Graphics::Transform::Transform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale) {
+    Graphics::Transform::Transform(const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale) {
 
         glm::mat4 transform(1.0f);
 

@@ -1,20 +1,14 @@
-#ifdef __INTELLISENSE
-#include <Virtus.hpp>
-#endif
-
 namespace Virtus {
 
-    Map::Map(std::string& path, ImageLoader& image_loader, ShaderUnitLoader& shader_unit_loader, MeshLoader& mesh_loader, MaterialLoader& material_loader) {
+    Map::Map(const std::string& path, ImageLoader& image_loader, ShaderUnitLoader& shader_unit_loader, MeshLoader& mesh_loader, MaterialLoader& material_loader) {
 
-#ifndef __INTELLISENSE
         if(!std::filesystem::exists(path)) Fatal(fmt::format("No such file {}", path));
-#endif
 
         YAML::Node map = YAML::LoadFile(path);
 
         for(const auto& element : map["geometry"]) {
 
-            std::string mesh_path = element["path"].as<std::string>();
+            auto mesh_path = element["path"].as<std::string>();
             m_Geometry.push_back(&mesh_loader.Get(mesh_path));
 
             glm::vec3 position(
@@ -30,16 +24,17 @@ namespace Virtus {
                         element["transform"][2][1].as<float>(),
                         element["transform"][2][2].as<float>());
 
+            Graphics::Transform t{position, rotation, scale};
             std::vector<Graphics::Transform> instance {
 
-                {position, rotation, scale}
+                t
 
             };
 
             for(auto& submesh : m_Geometry.back()->m_Elements) {
 
                 // TODO: Reusing VBOs with multiple VAOs for materials - `AttachVBO`?
-                std::string material_path = element["material"].as<std::string>();
+                auto material_path = element["material"].as<std::string>();
                 std::vector<Graphics::Material> material {
                     
                     material_loader.Get(material_path)
@@ -73,7 +68,7 @@ namespace Virtus {
 
     }
 
-    void Map::Draw(Graphics& graphics, Graphics::Shader& shader) {
+    void Map::Draw(const Graphics& graphics, Graphics::Shader& shader) {
 
         std::string u_PointLightCount("u_PointLightCount");
         uint light_count = m_PointLightPositions.size();
@@ -98,4 +93,4 @@ namespace Virtus {
 
     }
 
-};
+}

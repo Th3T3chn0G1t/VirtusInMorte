@@ -10,7 +10,12 @@
 #include <filesystem>
 #include <exception>
 #include <fstream>
+#include <optional>
+#include <random>
+#include <chrono>
 #include <cstdlib>
+#include <cstdint>
+#include <cstddef>
 #include <cstring>
 
 #include <fmt/format.h>
@@ -31,77 +36,10 @@ namespace Common {
     using uptr = std::uintptr_t;
     using usz = std::size_t;
 
-    void Fatal(std::string);
-    void Error(std::string);
-    void Info(std::string);
-    void Debug(std::string);
-
-    template<typename E>
-    constexpr std::underlying_type_t<E> to_underlying(E e) noexcept {
-
-        return static_cast<std::underlying_type_t<E>>(e);
-
-    }
-
-    template<typename E>
-    requires std::is_enum<E>::value
-    constexpr inline bool bit_enum = false;
-
-    template<typename E>
-    requires bit_enum<E>
-    constexpr E operator&(E left, E right) noexcept {
-
-        return static_cast<E>(to_underlying(left) & to_underlying(right));
-
-    }
-
-    template<typename E>
-    requires bit_enum<E>
-    constexpr E operator|(E left, E right) noexcept {
-
-        return static_cast<E>(to_underlying(left) | to_underlying(right));
-
-    }
-
-    template<typename E>
-    requires bit_enum<E>
-    constexpr E operator^(E left, E right) noexcept {
-
-        return static_cast<E>(to_underlying(left) ^ to_underlying(right));
-
-    }
-
-    template<typename E>
-    requires bit_enum<E>
-    constexpr E operator~(E value) noexcept {
-
-        return static_cast<E>(~to_underlying(value));
-
-    }
-
-    template<typename E>
-    requires bit_enum<E>
-    constexpr E& operator&=(E& left, E right) noexcept {
-
-        return left = left & right;
-
-    }
-
-    template<typename E>
-    requires bit_enum<E>
-    constexpr E& operator|=(E& left, E right) noexcept {
-
-        return left = left | right;
-
-    }
-
-    template<typename E>
-    requires bit_enum<E>
-    constexpr E& operator^=(E& left, E right) noexcept {
-
-        return left = left ^ right;
-
-    }
+    [[noreturn]] void Fatal(const std::string&);
+    void Error(const std::string&);
+    void Info(const std::string&);
+    void Debug(const std::string&);
 
     template<class T, usz ResourcePoolSize>
     class ResourceLoader {
@@ -113,9 +51,9 @@ namespace Common {
         std::unordered_map<std::string, usz> m_Map;
 
     public:
-        ResourceLoader(std::string resource_directory) : m_ResourceDirectory(resource_directory) {}
+        ResourceLoader(const std::string& resource_directory) : m_ResourceDirectory(resource_directory) {}
 
-        T& Get(std::string& path) {
+        T& Get(const std::string& path) {
 
             auto empl = m_Map.try_emplace(path, ResourcePoolSize);
             auto it = empl.first;
@@ -137,12 +75,51 @@ namespace Common {
 
     };
 
-    namespace Game {
+    class Item {
 
-        class Item {
+    public:
+        enum class Usage {
+
+            Consumable,
+            Reusable,
+            Equipable
 
         };
 
-    }
+        enum class Slot {
+
+            None,
+            Weapon,
+            Armor
+
+        };
+
+        enum class Rarity {
+
+            Common,
+            Uncommon,
+            Rare
+
+        };
+
+    public:
+        Usage m_Usage;
+        Slot m_Slot;
+        Rarity m_Rarity;
+        std::string m_Name;
+        std::string m_Description;
+
+    public:
+        Item(Usage usage, Slot slot, Rarity rarity, const std::string& name, const std::string& description) : m_Usage(usage), m_Slot(slot), m_Rarity(rarity), m_Name(name), m_Description(description) {}
+
+        virtual void OnUse() {}
+
+        virtual void OnEquip() {}
+        virtual void OnDisarm() {}
+
+        virtual void OnAdd() {}
+        virtual void OnRemove() {}
+
+    };
 
 }

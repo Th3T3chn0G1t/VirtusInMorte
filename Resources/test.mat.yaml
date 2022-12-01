@@ -2,3 +2,4 @@
 specular: 16
 shininess: 0.5
 sample: false
+#texture: 'test.bmp'

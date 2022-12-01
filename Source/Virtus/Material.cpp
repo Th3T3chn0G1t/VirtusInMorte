@@ -1,7 +1,3 @@
-#ifdef __INTELLISENSE
-#include <Virtus.hpp>
-#endif
-
 namespace Virtus {
 
     Graphics::BufferLayout Graphics::Material::Layout = {
@@ -13,11 +9,9 @@ namespace Virtus {
 
     };
 
-    Graphics::Material::Material(std::string& path) {
+    Graphics::Material::Material(const std::string& path) {
 
-#ifndef __INTELLISENSE
         if(!std::filesystem::exists(path)) Fatal(fmt::format("No such file {}", path));
-#endif
 
         YAML::Node map = YAML::LoadFile(path);
 
