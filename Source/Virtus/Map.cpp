@@ -9,7 +9,7 @@ namespace Virtus {
         for(const auto& element : map["geometry"]) {
 
             auto mesh_path = element["path"].as<std::string>();
-            m_Geometry.push_back(&bundle.m_MeshLoader.get().Get(mesh_path, bundle));
+            m_Geometry.emplace_back(bundle.m_MeshLoader.get().Get(mesh_path, bundle));
 
             glm::vec3 position(
                         element["transform"][0][0].as<float>(),
@@ -24,24 +24,27 @@ namespace Virtus {
                         element["transform"][2][1].as<float>(),
                         element["transform"][2][2].as<float>());
 
-            Graphics::Transform t{position, rotation, scale};
+            Graphics::Transform transform{position, rotation, scale};
             std::vector<Graphics::Transform> instance {
 
-                t
+                transform
 
             };
 
-            for(auto& submesh : m_Geometry.back()->m_Elements) {
+            auto material_path = element["material"].as<std::string>();
+            Graphics::Material& material = bundle.m_MaterialLoader.get().Get(material_path, bundle);
+            std::vector<Graphics::Material::Node> node {
+
+                    material.m_Node
+
+            };
+            m_Materials.emplace_back(material);
+
+            for(auto& submesh : m_Geometry.back().get().m_Elements) {
 
                 // TODO: Reusing VBOs with multiple VAOs for materials - `AttachVBO`?
-                auto material_path = element["material"].as<std::string>();
-                std::vector<Graphics::Material> material {
-                    
-                    bundle.m_MaterialLoader.get().Get(material_path, bundle)
-
-                };
                 submesh.m_VAO.CreateVBO(instance, Graphics::BufferUsage::StaticDraw, Graphics::Transform::Layout);
-                submesh.m_VAO.CreateVBO(material, Graphics::BufferUsage::StaticDraw, Graphics::Material::Layout);
+                submesh.m_VAO.CreateVBO(node, Graphics::BufferUsage::StaticDraw, Graphics::Material::Node::Layout);
 
                 Debug(fmt::format("Loaded mesh with {} indices and {} vertices", submesh.m_IndexCount, submesh.m_VertexCount));
 
@@ -80,9 +83,18 @@ namespace Virtus {
         std::string u_PointLightColors("u_PointLightColors");
         shader.Uniform(u_PointLightColors, m_PointLightColors);
 
-        for(auto& mesh : m_Geometry) {
+        for(usz i = 0; i < m_Geometry.size(); ++i) {
 
-            for(auto& element : mesh->m_Elements) {
+            if(m_Materials[i].get().m_Texture) {
+
+                int unit(0);
+                m_Materials[i].get().m_Texture.value().Bind(unit);
+                std::string u_Texture("u_Texture");
+                shader.Uniform(u_Texture, unit);
+
+            }
+
+            for(auto& element : m_Geometry[i].get().m_Elements) {
 
                 element.Bind();
                 graphics.Draw(element.m_IndexCount, 1, Graphics::DrawMode::Indexed);

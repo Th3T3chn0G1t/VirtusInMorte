@@ -37,12 +37,9 @@ int main(int argc, char** argv) {
     Virtus::Graphics::Shader::Unit& fragment = shader_unit_loader.Get(fragment_path, loader_bundle);
     Virtus::Graphics::Shader shader(vertex, fragment);
 
-    std::string image_path {"test.bmp"};
-    Virtus::Graphics::Texture texture(image_loader.Get(image_path, loader_bundle), Virtus::Graphics::Texture::FilterMode::Linear, Virtus::Graphics::Texture::WrapMode::Clamp);
-
     glm::mat4 projection(glm::perspective(glm::radians(75.0f), (float) extent[0] / (float) extent[1], 0.01f, 100.0f));
 
-    std::string map_path {"0.map.yaml"}; // TODO: Resource loader on maps
+    std::string map_path {"0.map.yaml"};
     Virtus::Map& map(map_loader.Get(map_path, loader_bundle));
 
     struct Camera {
@@ -179,12 +176,6 @@ int main(int argc, char** argv) {
         graphics.Clear({0.8f, 0.4f, 0.3f});
 
         shader.Bind();
-
-        int unit(0);
-        texture.Bind(unit);
-
-        std::string u_Texture("u_Texture");
-        shader.Uniform(u_Texture, unit);
 
         std::string u_VP("u_VP");
         glm::mat4 VP(projection * view);

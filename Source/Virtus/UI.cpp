@@ -199,7 +199,6 @@ namespace Virtus {
         m_Context->style.selectable.text_hover_active = content;
         m_Context->style.selectable.text_pressed_active = content;
 
-        // TODO: Cursor border?
         m_Context->style.slider.normal = background_item;
         m_Context->style.slider.hover = background_item;
         m_Context->style.slider.active = background_item;

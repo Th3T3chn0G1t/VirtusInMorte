@@ -364,18 +364,24 @@ namespace Virtus {
         class Material {
 
         public:
-            static BufferLayout Layout;
+            class Node {
+
+            public:
+                static BufferLayout Layout;
+
+            public:
+                uint m_SpecularStrength;
+                float m_Shininess;
+                uint m_DoSample;
+
+            };
 
         public:
-            uint m_SpecularStrength;
-            float m_Shininess;
-            uint m_DoSample;
-
-//            std::reference_wrapper<Texture> m_Texture;
+            Node m_Node;
+            std::optional<Texture> m_Texture;
 
         public:
             Material() = default;
-            Material(const uint specular_strength, const float shininess, const uint do_sample) : m_SpecularStrength(specular_strength), m_Shininess(shininess), m_DoSample(do_sample) {}
             explicit Material(const std::string&, ResourceLoaderBundle&);
 
         };
@@ -489,7 +495,8 @@ namespace Virtus {
     class Map {
 
     public:
-        std::vector<Graphics::Mesh*> m_Geometry;
+        std::vector<std::reference_wrapper<Graphics::Material>> m_Materials;
+        std::vector<std::reference_wrapper<Graphics::Mesh>> m_Geometry;
         std::vector<glm::vec3> m_PointLightPositions;
         std::vector<glm::vec3> m_PointLightColors;
 
