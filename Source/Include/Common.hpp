@@ -32,7 +32,7 @@ namespace Common {
     using uchar = unsigned char;
     using ushort = unsigned char;
     using uint = unsigned int;
-    using half = __fp16;
+    using half = ushort; // Symbolic - storage type only
     using uptr = std::uintptr_t;
     using usz = std::size_t;
 
