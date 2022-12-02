@@ -24,11 +24,14 @@ int main() {
         socket.read_some(asio::buffer(buffer), error);
         error_if(error);
 
-        fmt::print("> {}\n", buffer.data());
+        std::cout << "> " << buffer.data() << std::endl;
 
         if(cmd == "exit") {
 
-            fmt::print("Exiting...\n");
+            socket.close(error);
+            error_if(error);
+
+            std::cout << "Exiting..." << std::endl;
             return 0;
 
         }

@@ -56,9 +56,9 @@ namespace Common {
         template<class B>
         T& Get(const std::string& path, B& bundle) {
 
-            auto empl = m_Map.try_emplace(path, ResourcePoolSize);
-            auto it = empl.first;
-            auto added = empl.second;
+            auto emplaced = m_Map.try_emplace(path, ResourcePoolSize);
+            auto it = emplaced.first;
+            auto added = emplaced.second;
 
             if(added) {
 

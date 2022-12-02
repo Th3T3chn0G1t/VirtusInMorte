@@ -72,9 +72,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
     include_directories(Source/Include)
 #
 
+# Morte
+    file(GLOB Morte Source/Morte/*.cpp Source/Include/*.hpp)
+
+    add_executable(Morte ${Morte} ${Common})
+
+    target_precompile_headers(Morte PUBLIC "$<$<COMPILE_LANGUAGE:CXX>:<Morte.hpp$<ANGLE-R>>")
+#
+
 # Virtus
     file(GLOB Virtus Source/Virtus/*.cpp Source/Include/*.hpp Source/Virtus/SingleHeaderImplementation.c)
-    include_directories(Source/Include)
 
     add_executable(Virtus ${Virtus} ${Common} ${GLAD})
 

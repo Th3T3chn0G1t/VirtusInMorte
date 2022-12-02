@@ -528,4 +528,11 @@ namespace Virtus {
 
     using UIStyleLoader = ResourceLoader<UI::Style, 128>;
 
+    class ServerConnection {
+
+    public:
+
+
+    };
+
 }

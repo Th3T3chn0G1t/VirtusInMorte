@@ -20,16 +20,18 @@ int main() {
             socket.read_some(asio::buffer(buffer), error);
             error_if(error);
 
-            fmt::print("{}\n", buffer.data());
+            std::cout << buffer.data() << std::endl;
 
             std::string ret;
             if(std::string("ping") == buffer.data()) ret = "pong";
             else if(std::string("exit") == buffer.data()) {
-                
+
+                socket.shutdown(asio::socket_base::shutdown_both, error);
+                error_if(error);
                 socket.close(error);
                 error_if(error);
 
-                continue;
+                break;
 
             }
             else ret = "unknown command";

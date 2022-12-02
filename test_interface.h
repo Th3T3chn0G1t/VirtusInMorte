@@ -1,6 +1,5 @@
 #pragma once
 
-#include <fmt/format.h>
 #include <asio.hpp>
 #include <string>
 #include <cstdlib>
@@ -13,7 +12,7 @@ static void error_if(asio::error_code error) {
 
     if(error) {
 
-        fmt::print("Asio Error: {}\n", error.message());
+        std::cerr << "Asio Error: " << error.message() << std::endl;
         std::abort();
 
     }
