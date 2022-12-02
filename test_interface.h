@@ -6,6 +6,8 @@
 #include <cstring>
 #include <cstdint>
 #include <iostream>
+#include <memory>
+#include <utility>
 using asio::ip::tcp;
 
 static void error_if(asio::error_code error) {
