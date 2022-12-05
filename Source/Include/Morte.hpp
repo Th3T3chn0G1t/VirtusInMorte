@@ -6,6 +6,4 @@ namespace Morte {
 
     using namespace Common;
 
-
-
 }

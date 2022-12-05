@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -40,6 +41,29 @@ namespace Common {
     void Error(const std::string&);
     void Info(const std::string&);
     void Debug(const std::string&);
+
+    template<class T>
+    static typename std::underlying_type<T>::type EnumToUnderlying(const T value) {
+
+        return static_cast<typename std::underlying_type<T>::type>(value);
+
+    }
+
+    template<typename T>
+    class Span {
+
+    public:
+        T* m_Data;
+        usz m_Size;
+
+    public:
+        Span(T* start, T* end) : m_Data(start), m_Size(end - start) {}
+        Span(T* start, usz size) : m_Data(start), m_Size(size) {}
+
+        template<class S>
+        Span(S& container) : m_Data(container.data()), m_Size(container.size()) {}
+
+    };
 
     template<class T, usz ResourcePoolSize>
     class ResourceLoader {
@@ -122,5 +146,36 @@ namespace Common {
         virtual void OnRemove() {}
 
     };
+
+    namespace Protocol {
+
+        enum class Operation : ushort {
+
+            Null = 0,
+            Echo = 65,
+            Broadcast = 66
+
+        };
+
+        class Packet {
+
+        public:
+            static const usz PacketDataLength = 1024 - sizeof(Operation);
+
+        private:
+            union Data {
+
+                std::array<uchar, PacketDataLength> u_EchoMessage;
+                std::array<uchar, PacketDataLength> u_Pad;
+
+            };
+
+        public:
+            Operation m_Operation;
+            Data m_Data;
+
+        };
+
+    }
 
 }
