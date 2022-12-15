@@ -12,8 +12,6 @@ namespace Morte {
         }
 
     private:
-        using OperationHandlers = std::unordered_map<Protocol::Operation, std::function<Protocol::Packet(const Protocol::Packet&)>>;
-
         class Session : public std::enable_shared_from_this<Session> {
 
         private:
@@ -42,6 +40,9 @@ namespace Morte {
 
             void Start() {
 
+                // TODO: OnConnect OnDisconnect
+
+                Debug(fmt::format("Client connected from {}", m_Socket.remote_endpoint().address().to_string()));
                 Await();
 
             }
@@ -76,7 +77,7 @@ namespace Morte {
             void Send(const Protocol::Packet& packet) {
 
                 auto self(shared_from_this());
-                auto write = [this, self](asio::error_code error, std::size_t length) {
+                auto write = [self](asio::error_code error, std::size_t length) {
 
                     if(error) {
 
@@ -95,14 +96,18 @@ namespace Morte {
     private:
         tcp::acceptor m_Acceptor;
         tcp::socket m_Socket;
-        OperationHandlers m_Handlers;
+        Protocol::OperationHandlers m_Handlers;
         std::vector<std::reference_wrapper<Session>> m_Sessions;
         usz m_CurrentID{0};
+        GameState m_State;
 
     public:
-        Server(asio::io_context& io_context, short port) : m_Acceptor(io_context, tcp::endpoint(tcp::v4(), port)), m_Socket(io_context) {
+        Server(asio::io_context& io_context, const short port) : m_Acceptor(io_context, tcp::endpoint(tcp::v4(), port)), m_Socket(io_context) {
 
             Accept();
+
+            std::string item("test.item.yaml");
+            m_State.m_ItemLoader.Get(item);
 
             m_Handlers[Protocol::Operation::Null] = [&](const Protocol::Packet& packet)-> Protocol::Packet {
 
@@ -112,6 +117,7 @@ namespace Morte {
 
             m_Handlers[Protocol::Operation::Echo] = [&](const Protocol::Packet& packet)-> Protocol::Packet {
 
+                Debug("Echo");
                 return {Protocol::Operation::Echo, packet.m_Data};
 
             };
@@ -143,7 +149,7 @@ namespace Morte {
                 if (!error) {
 
                     auto session = std::make_shared<Session>(std::move(m_Socket), *this, m_CurrentID++);
-                    m_Sessions.push_back(*session);
+                    m_Sessions.emplace_back(*session);
                     session->Start();
                     Accept();
 

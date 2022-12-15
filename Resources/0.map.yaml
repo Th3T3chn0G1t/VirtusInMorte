@@ -1,19 +1,19 @@
 geometry: [
 # TODO: Notation for instanced draws - array of transforms + materials
   {
-    path: 'test.obj',
+    path: "test.obj",
     transform: [ [ 0.0, 0.0, 0.0 ], [ 0.0, 0.0, 0.0 ], [ 0.5, 0.5, 0.5 ] ],
-    material: 'unsampled.mat.yaml'
+    material: "unsampled.mat.yaml"
   },
   {
-    path: 'untitled.obj',
+    path: "untitled.obj",
     transform: [ [ 2.0, 0.0, 0.0 ], [ 0.0, 0.0, 0.0 ], [ 0.5, 0.5, 0.5 ] ],
-    material: 'test.mat.yaml'
+    material: "test.mat.yaml"
   },
   {
-    path: 'forest0.obj',
+    path: "forest0.obj",
     transform: [ [ 0.0, -1.0, 0.0 ], [ 0.0, 0.0, 0.0 ], [ 1.0, 1.0, 1.0 ] ],
-    material: 'test.mat.yaml'
+    material: "test.mat.yaml"
   }
 ]
 

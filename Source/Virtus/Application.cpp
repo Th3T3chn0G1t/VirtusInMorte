@@ -1,5 +1,106 @@
 using namespace Common;
 
+class State {
+
+public:
+    ItemLoader m_ItemLoader;
+
+    std::vector<Item> m_Inventory;
+    std::optional<Item> m_ArmorSlot;
+    std::optional<Item> m_WeaponSlot;
+
+};
+
+class Connection {
+
+private:
+    static Protocol::Packet OnUnhandledPacket(const Protocol::Packet& packet) {
+
+        Error(fmt::format("Unhandled packet for operation {}", EnumToUnderlying(packet.m_Operation)));
+
+        return Protocol::Packet{Protocol::Operation::Null, {}};
+
+    }
+
+public:
+    tcp::socket m_Socket;
+    Protocol::Packet m_Data{};
+    Protocol::OperationHandlers m_Handlers;
+
+public:
+    Connection(asio::io_context& io_context, const std::string& address, const short port) : m_Socket(io_context) {
+
+        asio::connect(m_Socket, tcp::resolver(io_context).resolve(address, fmt::format("{}", port)));
+
+        m_Handlers[Protocol::Operation::Null] = [&](const Protocol::Packet& packet)-> Protocol::Packet {
+
+            Debug("Null");
+            return {Protocol::Operation::Null, {}};
+
+        };
+
+        m_Handlers[Protocol::Operation::Echo] = [&](const Protocol::Packet& packet)-> Protocol::Packet {
+
+            Debug(fmt::format("Echo: {}", (const char*) packet.m_Data.u_Raw.data()));
+            return {Protocol::Operation::Null, {}};
+
+        };
+
+        m_Handlers[Protocol::Operation::Broadcast] = [&](const Protocol::Packet& packet)-> Protocol::Packet {
+
+            Debug(fmt::format("Broadcast: {}", (const char*) packet.m_Data.u_Raw.data()));
+            return {Protocol::Operation::Null, {}};
+
+        };
+
+        Await();
+
+    }
+
+    void Await() {
+
+        auto read = [this](asio::error_code error, std::size_t length) {
+
+            if(!error) {
+
+                auto it = m_Handlers.find(m_Data.m_Operation);
+                auto handler = it != m_Handlers.end() ? it->second : OnUnhandledPacket;
+                Protocol::Packet packet = handler(m_Data);
+                if(packet.m_Operation != Protocol::Operation::Null) Send(packet);
+                Await();
+
+            }
+            else {
+
+                Error(error.message());
+
+            }
+
+        };
+
+        std::memset(&m_Data, 0, sizeof(Protocol::Packet));
+        m_Socket.async_read_some(asio::buffer(&m_Data, sizeof(Protocol::Packet)), read);
+
+    }
+
+    void Send(const Protocol::Packet& packet) {
+
+        auto write = [](asio::error_code error, std::size_t length) {
+
+            if(error) {
+
+                Error(error.message());
+
+            }
+
+        };
+
+        asio::async_write(m_Socket, asio::buffer(&packet, sizeof(Protocol::Packet)), write);
+
+    }
+
+};
+
 int main(int argc, char** argv) {
 
     std::string resource_dir {"Resources"};
@@ -19,6 +120,11 @@ int main(int argc, char** argv) {
     window.SetCursorCapture(true);
     Virtus::Graphics graphics(window);
     Virtus::UI ui(window);
+    State state{{resource_dir}};
+
+    asio::io_context io_context;
+    std::string address("localhost");
+    Connection connection(io_context, address, 9999);
 
     Virtus::ImageLoader image_loader(resource_dir);
     Virtus::ShaderUnitLoader shader_unit_loader(resource_dir);
@@ -70,11 +176,12 @@ int main(int argc, char** argv) {
     Item weapon_nothing{Item::Usage::Equipable, Item::Slot::Weapon, Item::Rarity::Common, none, weapon};
     std::optional<Item> armor_slot;
     std::optional<Item> weapon_slot;
-
     std::vector<Item> items;
 
     while(!window.Poll()) {
-        
+
+        io_context.poll();
+
         glm::vec2 cursor(window.GetCursor());
 
         glm::vec2 cursor_delta(cursor - last_cursor);
@@ -100,6 +207,8 @@ int main(int argc, char** argv) {
 
         bool g_state = window.GetKey(GLFW_KEY_G);
         if(!g_held && g_state) {
+
+            connection.Send({Protocol::Operation::InventoryAdd, { .u_Item = 0 }});
 
             uchar val = rng();
             float d = static_cast<float>(val) / 255.0f;

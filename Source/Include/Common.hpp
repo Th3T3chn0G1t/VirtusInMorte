@@ -103,6 +103,10 @@ namespace Common {
     class Item {
 
     public:
+        using ID = usz;
+        static ID CurrentID;
+
+    public:
         enum class Usage {
 
             Consumable,
@@ -128,6 +132,8 @@ namespace Common {
         };
 
     public:
+        ID m_ID;
+
         Usage m_Usage;
         Slot m_Slot;
         Rarity m_Rarity;
@@ -135,7 +141,9 @@ namespace Common {
         std::string m_Description;
 
     public:
-        Item(Usage usage, Slot slot, Rarity rarity, const std::string& name, const std::string& description) : m_Usage(usage), m_Slot(slot), m_Rarity(rarity), m_Name(name), m_Description(description) {}
+        Item(Usage usage, Slot slot, Rarity rarity, const std::string& name, const std::string& description) : m_ID(CurrentID++), m_Usage(usage), m_Slot(slot), m_Rarity(rarity), m_Name(name), m_Description(description) {}
+        explicit Item(const std::string&);
+        Item() = default;
 
         virtual void OnUse() {}
 
@@ -147,11 +155,16 @@ namespace Common {
 
     };
 
+    using ItemLoader = ResourceLoader<Item, 1024>;
+
     namespace Protocol {
 
         enum class Operation : ushort {
 
             Null = 0,
+
+            InventoryAdd,
+
             Echo = 65,
             Broadcast = 66
 
@@ -165,8 +178,8 @@ namespace Common {
         private:
             union Data {
 
-                std::array<uchar, PacketDataLength> u_EchoMessage;
-                std::array<uchar, PacketDataLength> u_Pad;
+                Item::ID u_Item;
+                std::array<uchar, PacketDataLength> u_Raw;
 
             };
 
@@ -175,6 +188,8 @@ namespace Common {
             Data m_Data;
 
         };
+
+        using OperationHandlers = std::unordered_map<Protocol::Operation, std::function<Protocol::Packet(const Protocol::Packet&)>>;
 
     }
 

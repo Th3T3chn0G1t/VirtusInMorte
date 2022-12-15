@@ -19,7 +19,7 @@ namespace Common {
 
     }
 
-    void Debug(const std::string& message) {
+    void Debug(const std::string &message) {
 
         fmt::print(fmt::fg(fmt::color::light_blue), "Debug: {}\n", message);
 
