@@ -18,7 +18,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 # GLFW
     add_subdirectory(Source/Vendor/GLFW)
-	link_libraries(glfw)
+    link_libraries(glfw)
 #
 
 # STB
